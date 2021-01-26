@@ -201,6 +201,7 @@ IOListener.newsocket = function createSocket(id) {
 		} else {
 			socket.listeners[event].perm.push(cb);
 		}
+		return socket;
 	};
 	socket.once = (event: string, cb: Function) => socket.on(event, cb, true);
 	socket.emit = socket.write = socket.send;
