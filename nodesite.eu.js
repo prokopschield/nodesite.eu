@@ -35,7 +35,7 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-Object.defineProperty(exports, "__esModule", { value: true });
+exports.__esModule = true;
 exports.IOListener = exports.redo = exports.sites = exports.init = exports.NodeSiteClient = exports.io = exports.create = exports.proxy = void 0;
 var libSocketIO = require('socket.io-client');
 var fs = require('fs');
@@ -108,7 +108,7 @@ var init = function initializeSocket() {
                 case 0:
                     if (insSocketIO)
                         insSocketIO.removeAllListeners();
-                    return [4 /*yield*/, node_fetch_1.default('https://nodesite.eu/get_port', {}).then(function (r) { return r.text(); })];
+                    return [4 /*yield*/, node_fetch_1["default"]('https://nodesite.eu/get_port', {}).then(function (r) { return r.text(); })];
                 case 1:
                     port = _a.sent();
                     insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
@@ -260,7 +260,7 @@ IOListener.newsocket = function createSocket(id) {
         if (!socket.listeners[event]) {
             socket.listeners[event] = {
                 perm: [],
-                once: [],
+                once: []
             };
         }
         if (once) {
@@ -269,6 +269,7 @@ IOListener.newsocket = function createSocket(id) {
         else {
             socket.listeners[event].perm.push(cb);
         }
+        return socket;
     };
     socket.once = function (event, cb) { return socket.on(event, cb, true); };
     socket.emit = socket.write = socket.send;
@@ -402,7 +403,7 @@ exports.proxy = NodeSiteClient.proxy = function createProxy(hostListen, hostPath
     return NodeSiteClient(hostListen, hostPath || '/', function (request) {
         var uri = urlPoint + request.uri;
         uri = uri.replace('/\/+/', '/');
-        return node_fetch_1.default(uri, fetchOptions)
+        return node_fetch_1["default"](uri, fetchOptions)
             .then(function (res) { return __awaiter(_this, void 0, void 0, function () {
             var head, c;
             var _a;
