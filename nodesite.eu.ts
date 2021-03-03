@@ -55,7 +55,7 @@ const solve = async function solveChallenge(site: string, code: string) {
 
 let init = async function initializeSocket() {
 	if (insSocketIO) insSocketIO.removeAllListeners();
-	const port = await fetch('https://nodesite.eu/get_port', {}).then((r: Response) => r.text());
+	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) => r.text());
 	insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
 	insSocketIO.on('connect', redo);
 	insSocketIO.on('error', redo);
