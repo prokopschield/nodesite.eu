@@ -168,7 +168,14 @@ const fileReadHandler = function readFileAndConvertIntoResponse(file) {
 	};
 }
 
-const IOListener = function NodeSiteIOListener(cb: Function) {
+const IOListener: {
+    (cb: Function): void;
+    socketListeners: Function[];
+    registerSocketListener(cb: Function): void;
+    newsocket(id: any): NodeSiteClientSocket;
+    sockets: {};
+    receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
+} = function NodeSiteIOListener(cb: Function) {
 	IOListener.registerSocketListener(cb);
 }
 
@@ -177,8 +184,22 @@ IOListener.registerSocketListener = (cb: Function) => {
 	IOListener.socketListeners.push(cb);
 }
 
+interface NodeSiteClientSocket {
+	(...args: Array<any>): void;
+	id: any;
+	send(...args: Array<any>): void;
+	listeners: {};
+	listenersAny: Function[];
+	onAny(f: Function): number;
+	on(event: string, cb: Function, once: boolean): NodeSiteClientSocket;
+	once(event: string, cb: Function): NodeSiteClientSocket;
+	emit: (...args: Array<any>) => void;
+	write: (...args: Array<any>) => void;
+	receive(e: string, args?: any[]): Promise<void>;
+}
+
 IOListener.newsocket = function createSocket(id) {
-	const socket = function (...args: Array<any>) {
+	const socket: NodeSiteClientSocket = function (...args: Array<any>) {
 		args.unshift('message');
 		socket.send.apply(null, args);
 	};
