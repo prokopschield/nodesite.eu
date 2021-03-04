@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 const nodesite_eu_1 = require("./nodesite.eu");
@@ -73,6 +74,6 @@ switch (options.action) {
                 }
             }
         }
-        scandir('.');
+        setTimeout(() => scandir('.'), 4000);
     }
 }

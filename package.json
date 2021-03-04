@@ -1,6 +1,6 @@
 {
   "name": "nodesite.eu",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "Put your work online - the easy way.",
   "main": "nodesite.eu.js",
   "dependencies": {

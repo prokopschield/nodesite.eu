@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import { create, rawwrite } from './nodesite.eu';
 import fetch from 'node-fetch';
 import { posix as path } from 'path';
@@ -76,6 +78,7 @@ switch (options.action) {
 				}
 			}
 		}
-		scandir('.');
+		
+		setTimeout(() => scandir('.'), 4000);
 	}
 }
