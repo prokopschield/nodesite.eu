@@ -271,3 +271,4 @@ function rawwrite(...args) {
     insSocketIO.emit(...args);
 }
 exports.rawwrite = rawwrite;
+NodeSiteClient.rawwrite = rawwrite;
