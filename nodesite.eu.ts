@@ -322,3 +322,7 @@ export {
 	redo,
 	IOListener
 }
+
+export function rawwrite (...args: any[]) {
+	insSocketIO.emit(...args);
+}
