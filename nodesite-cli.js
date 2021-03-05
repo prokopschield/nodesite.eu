@@ -55,11 +55,23 @@ switch (options.action) {
                     'Content-Type': 'application/octet-stream',
                     'X-NodeSite': 'NodeSite-CLI',
                 },
-                body: fs_1.readFileSync(file),
+                body: fs_1.createReadStream(file),
             }).then(response => response.text());
-            paths.forEach(p => {
+            paths.filter(a => !a.includes('..')).forEach(p => {
                 nodesite_eu_1.rawwrite('static', domain, p, desc);
+                nodesite_eu_1.create(domain, p, () => {
+                    nodesite_eu_1.rawwrite('static', domain, p, desc);
+                    return ({
+                        statusCode: 302,
+                        head: {
+                            location: `https://${domain}${p}`,
+                        }
+                    });
+                });
             });
+            for (const p of paths) {
+                await node_fetch_1.default(`https://${domain}${p}`, {});
+            }
         }
         async function scandir(dir) {
             const scan = fs_1.readdirSync(dir);
@@ -74,6 +86,6 @@ switch (options.action) {
                 }
             }
         }
-        setTimeout(() => scandir('.'), 4000);
+        setTimeout(() => scandir('.'), 12000);
     }
 }

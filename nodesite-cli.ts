@@ -3,7 +3,7 @@
 import { create, rawwrite } from './nodesite.eu';
 import fetch from 'node-fetch';
 import { posix as path } from 'path';
-import { readdirSync, readFileSync, statSync } from 'fs';
+import { createReadStream, readdirSync, statSync } from 'fs';
 
 const options: {
 	action: 'init';
@@ -60,11 +60,23 @@ switch (options.action) {
 					'Content-Type': 'application/octet-stream',
 					'X-NodeSite': 'NodeSite-CLI',
 				},
-				body: readFileSync(file),
+				body: createReadStream(file),
 			}).then(response => response.text());
-			paths.forEach(p => {
+			paths.filter(a=>!a.includes('..')).forEach(p => {
 				rawwrite('static', domain, p, desc);
+				create(domain, p, () => {
+					rawwrite('static', domain, p, desc);
+					return ({
+						statusCode: 302,
+						head: {
+							location: `https://${domain}${p}`,
+						}
+					});
+				});
 			});
+			for (const p of paths) {
+				await fetch(`https://${domain}${p}`, {});
+			}
 		}
 		async function scandir (dir: string) {
 			const scan = readdirSync(dir);
@@ -79,6 +91,6 @@ switch (options.action) {
 			}
 		}
 		
-		setTimeout(() => scandir('.'), 4000);
+		setTimeout(() => scandir('.'), 12000);
 	}
 }
