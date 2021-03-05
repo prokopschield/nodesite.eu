@@ -8,8 +8,10 @@ import { createReadStream, readdirSync, statSync } from 'fs';
 const options: {
 	action: 'init';
 	site?: string;
+	entry?: string;
 } = {
 	action: 'init',
+	entry: process.env.index || process.env.entry || 'index.html',
 }
 
 for (const arg of process.argv) {
@@ -29,14 +31,15 @@ for (const arg of process.argv) {
 
 switch (options.action) {
 	case 'init': {
-		if (!options.site) {
-			console.log(`Correct usage: nodesite init <domain>.nodesite.eu`);
+		if (!options.site || !options.entry) {
+			console.log(`Correct usage: nodesite init <domain>`);
+			console.log(`E.g. nodesite init test`);
 		}
 		let domain = options.site.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
 		domain.match(/[^a-z0-9\-]/) ? domain : (domain += '.nodesite.eu');
 		create(domain, '/', null, '.');
-		async function uploadFile (file: string) {
-			const paths: string[] = [
+		async function uploadFile (file: string, paths?: string[]) {
+			paths ||= [
 				path.format({
 					root: '/',
 					base: path.relative('.', file),
@@ -74,9 +77,6 @@ switch (options.action) {
 					});
 				});
 			});
-			for (const p of paths) {
-				await fetch(`https://${domain}${p}`, {});
-			}
 		}
 		async function scandir (dir: string) {
 			const scan = readdirSync(dir);
@@ -91,6 +91,9 @@ switch (options.action) {
 			}
 		}
 		
+		if (options.entry) {
+			setTimeout(() => uploadFile(options.entry, ['/']), 10000);
+		}
 		setTimeout(() => scandir('.'), 12000);
 	}
 }

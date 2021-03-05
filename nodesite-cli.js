@@ -7,6 +7,7 @@ const path_1 = require("path");
 const fs_1 = require("fs");
 const options = {
     action: 'init',
+    entry: process.env.index || process.env.entry || 'index.html',
 };
 for (const arg of process.argv) {
     switch (arg) {
@@ -24,14 +25,15 @@ for (const arg of process.argv) {
 }
 switch (options.action) {
     case 'init': {
-        if (!options.site) {
-            console.log(`Correct usage: nodesite init <domain>.nodesite.eu`);
+        if (!options.site || !options.entry) {
+            console.log(`Correct usage: nodesite init <domain>`);
+            console.log(`E.g. nodesite init test`);
         }
         let domain = options.site.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
         domain.match(/[^a-z0-9\-]/) ? domain : (domain += '.nodesite.eu');
         nodesite_eu_1.create(domain, '/', null, '.');
-        async function uploadFile(file) {
-            const paths = [
+        async function uploadFile(file, paths) {
+            paths || (paths = [
                 path_1.posix.format({
                     root: '/',
                     base: path_1.posix.relative('.', file),
@@ -48,7 +50,7 @@ switch (options.action) {
                     root: '/',
                     base: path_1.posix.relative('./dist/', file),
                 }),
-            ];
+            ]);
             const desc = await node_fetch_1.default('https://hosting.nodesite.eu/static/upload', {
                 method: 'PUT',
                 headers: {
@@ -69,9 +71,6 @@ switch (options.action) {
                     });
                 });
             });
-            for (const p of paths) {
-                await node_fetch_1.default(`https://${domain}${p}`, {});
-            }
         }
         async function scandir(dir) {
             const scan = fs_1.readdirSync(dir);
@@ -85,6 +84,9 @@ switch (options.action) {
                     await uploadFile(rel);
                 }
             }
+        }
+        if (options.entry) {
+            setTimeout(() => uploadFile(options.entry, ['/']), 10000);
         }
         setTimeout(() => scandir('.'), 12000);
     }
