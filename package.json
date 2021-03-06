@@ -1,6 +1,6 @@
 {
   "name": "nodesite.eu",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Put your work online - the easy way.",
   "main": "nodesite.eu.js",
   "dependencies": {
@@ -13,6 +13,7 @@
     "@types/node": "^14.14.21"
   },
   "bin": {
+    "nodesite.eu": "./nodesite-cli.js",
     "nodesite": "./nodesite-cli.js"
   },
   "scripts": {
