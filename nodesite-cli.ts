@@ -2,7 +2,7 @@
 
 import { create, rawwrite } from './nodesite.eu';
 import fetch from 'node-fetch';
-import { posix as path } from 'path';
+import { posix as path, resolve as syspath_resolve } from 'path';
 import { createReadStream, readdirSync, statSync } from 'fs';
 
 const options: {
@@ -42,19 +42,19 @@ switch (options.action) {
 			paths ||= [
 				path.format({
 					root: '/',
-					base: path.relative('.', file),
+					base: path.relative('.', file).replace(/\\+/g, '/'),
 				}),
 				path.format({
 					root: '/',
-					base: path.relative('./build/', file),
+					base: path.relative('./build/', file).replace(/\\+/g, '/'),
 				}),
 				path.format({
 					root: '/',
-					base: path.relative('./public/', file),
+					base: path.relative('./public/', file).replace(/\\+/g, '/'),
 				}),
 				path.format({
 					root: '/',
-					base: path.relative('./dist/', file),
+					base: path.relative('./dist/', file).replace(/\\+/g, '/'),
 				}),
 			];
 			const desc = await fetch('https://hosting.nodesite.eu/static/upload', {
@@ -81,7 +81,7 @@ switch (options.action) {
 		async function scandir (dir: string) {
 			const scan = readdirSync(dir);
 			for (const f of scan) {
-				const rel = path.resolve(dir, f);
+				const rel = syspath_resolve(dir, f);
 				const stat = statSync(rel);
 				if (stat.isDirectory()) {
 					await scandir(rel);

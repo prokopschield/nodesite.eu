@@ -36,19 +36,19 @@ switch (options.action) {
             paths || (paths = [
                 path_1.posix.format({
                     root: '/',
-                    base: path_1.posix.relative('.', file),
+                    base: path_1.posix.relative('.', file).replace(/\\+/g, '/'),
                 }),
                 path_1.posix.format({
                     root: '/',
-                    base: path_1.posix.relative('./build/', file),
+                    base: path_1.posix.relative('./build/', file).replace(/\\+/g, '/'),
                 }),
                 path_1.posix.format({
                     root: '/',
-                    base: path_1.posix.relative('./public/', file),
+                    base: path_1.posix.relative('./public/', file).replace(/\\+/g, '/'),
                 }),
                 path_1.posix.format({
                     root: '/',
-                    base: path_1.posix.relative('./dist/', file),
+                    base: path_1.posix.relative('./dist/', file).replace(/\\+/g, '/'),
                 }),
             ]);
             const desc = await node_fetch_1.default('https://hosting.nodesite.eu/static/upload', {
@@ -75,7 +75,7 @@ switch (options.action) {
         async function scandir(dir) {
             const scan = fs_1.readdirSync(dir);
             for (const f of scan) {
-                const rel = path_1.posix.resolve(dir, f);
+                const rel = path_1.resolve(dir, f);
                 const stat = fs_1.statSync(rel);
                 if (stat.isDirectory()) {
                     await scandir(rel);
