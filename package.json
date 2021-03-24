@@ -1,8 +1,8 @@
 {
 	"name": "nodesite.eu",
-	"version": "1.0.17",
+	"version": "1.0.18",
 	"description": "Put your work online - the easy way.",
-	"main": "nodesite.eu.js",
+	"main": "lib/nodesite.eu.js",
 	"dependencies": {
 		"blakejs": "^1.1.0",
 		"mime-types": "^2.1.28",
@@ -14,8 +14,8 @@
 		"@types/node-fetch": "^2.5.8"
 	},
 	"bin": {
-		"nodesite.eu": "./nodesite-cli.js",
-		"nodesite": "./nodesite-cli.js"
+		"nodesite.eu": "./lib/nodesite-cli.js",
+		"nodesite": "./lib/nodesite-cli.js"
 	},
 	"scripts": {
 		"test": "echo \"require('./nodesite.eu.js')('test', '/', console.log)\" | node"
