@@ -7,10 +7,11 @@ import { createReadStream, readdirSync, statSync } from 'fs';
 
 const options: {
 	action: 'init';
-	site?: string;
-	entry?: string;
+	site: string;
+	entry: string;
 } = {
 	action: 'init',
+	site: 'cli-default',
 	entry: process.env.index || process.env.entry || 'index.html',
 }
 
@@ -37,7 +38,7 @@ switch (options.action) {
 		}
 		let domain = options.site.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
 		domain.match(/[^a-z0-9\-]/) ? domain : (domain += '.nodesite.eu');
-		create(domain, '/', null, '.');
+		create(domain, '/', void 0, '.');
 		async function uploadFile (file: string, paths?: string[]) {
 			paths ||= [
 				path.format({
@@ -67,7 +68,7 @@ switch (options.action) {
 			}).then(response => response.text());
 			paths.filter(a=>!a.includes('..')).forEach(p => {
 				rawwrite('static', domain, p, desc);
-				create(domain, p, () => {
+				create(domain, p, async () => {
 					rawwrite('static', domain, p, desc);
 					return ({
 						statusCode: 302,

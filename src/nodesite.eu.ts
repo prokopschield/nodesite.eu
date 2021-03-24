@@ -8,12 +8,29 @@ const BAD = 'Bad Gateway';
 import fetch from "node-fetch";
 
 let insSocketIO: any;
-let sites = {};
+let sites: {
+	[domain: string]: {
+		[path: string]: {
+			listener?: Listener;
+			file?: string;
+		}
+	}
+} = {};
 
-const deferred_challenges = [];
+type Listener = (request: NodeSiteRequest) => Promise<string|Buffer|{
+	statusCode?: number;
+	body?: string|Buffer;
+	head?: {
+		[header: string]: string;
+	}
+}>;
+
+const deferred_challenges: Function[] = [];
 let solving = false;
 
-const solved = {};
+const solved: {
+	[site: string]: string;
+} = {};
 const solve = async function solveChallenge(site: string, code: string) {
 	if (solving) {
 		deferred_challenges.push(() => solve(site, code));
@@ -155,7 +172,7 @@ const requestHandler = async (request: NodeSiteRequest) => {
 	}
 }
 
-const fileReadHandler = function readFileAndConvertIntoResponse(file) {
+const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
 	let data = fs.readFileSync(file);
 	let head = {
 		'Content-Type': mime(file.split(/[\\\/]+/).pop()),
@@ -173,7 +190,9 @@ const IOListener: {
     socketListeners: Function[];
     registerSocketListener(cb: Function): void;
     newsocket(id: any): NodeSiteClientSocket;
-    sockets: {};
+    sockets: {
+		[iid: number]: NodeSiteClientSocket;
+	};
     receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
 } = function NodeSiteIOListener(cb: Function) {
 	IOListener.registerSocketListener(cb);
@@ -188,7 +207,12 @@ interface NodeSiteClientSocket {
 	(...args: Array<any>): void;
 	id: any;
 	send(...args: Array<any>): void;
-	listeners: {};
+	listeners: {
+		[e: string]: {
+			perm: Function[];
+			once: Function[];
+		}
+	};
 	listenersAny: Function[];
 	onAny(f: Function): number;
 	on(event: string, cb: Function, once: boolean): NodeSiteClientSocket;
@@ -268,7 +292,7 @@ IOListener.receive = async (id: number, site: string, e: string, args: Array<any
 }
 
 
-const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/', listener?: Function, file: string = '') {
+const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/', listener?: Listener, file: string = '') {
 	domain = domain.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
@@ -282,25 +306,28 @@ const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/
 	let site = sites[domain];
 	site[path] = {
 		listener,
-		file
+		file,
 	}
 }
 
 export const proxy = NodeSiteClient.proxy = function createProxy(hostListen: string, hostPath = '/', urlPoint = 'localhost:8080', fetchOptions = {}) {
-	return NodeSiteClient(hostListen, hostPath || '/', (request) => {
+	return NodeSiteClient(hostListen, hostPath || '/', async (request: NodeSiteRequest) => {
 		let uri = urlPoint + request.uri;
 		uri = uri.replace('/\/+/', '/');
-		return fetch(uri, fetchOptions)
-			.then(async (res: any) => {
-				let head = {};
-				for (const c in res.headers.keys()) {
-					head[c] = res.headers.get(c);
-				}
-				return {
-					head,
-					body: await res.buffer()
-				}
-			})
+		const res = await fetch(uri, fetchOptions);
+		let head: {
+			[header: string]: string;
+		} = {};
+		for (const c in res.headers.keys()) {
+			const h = res.headers.get(c);
+			if (h) {
+				head[c] = h;
+			}
+		}
+		return {
+			head,
+			body: await res.buffer()
+		};
 	});
 }
 
