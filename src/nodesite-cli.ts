@@ -2,6 +2,7 @@
 
 import { create, rawwrite } from './nodesite.eu';
 import fetch from 'node-fetch';
+import https from 'https';
 import { posix as path, resolve as syspath_resolve } from 'path';
 import { createReadStream, readdirSync, statSync } from 'fs';
 
@@ -58,14 +59,23 @@ switch (options.action) {
 					base: path.relative('./dist/', file).replace(/\\+/g, '/'),
 				}),
 			];
-			const desc = await fetch('https://hosting.nodesite.eu/static/upload', {
-				method: 'PUT',
-				headers: {
-					'Content-Type': 'application/octet-stream',
-					'X-NodeSite': 'NodeSite-CLI',
-				},
-				body: createReadStream(file),
-			}).then(response => response.text());
+
+			let desc: string = '';
+			await new Promise(resolve => {
+				const req = https.request('https://hosting.nodesite.eu/static/upload', {
+					method: 'PUT',
+					headers: {
+						'Content-Type': 'application/octet-stream',
+						'X-NodeSite': 'NodeSite-CLI',
+					},
+				}, (res) => {
+					res.on('data', b => desc += b);
+					res.on('end', resolve);
+				});
+				createReadStream(file).pipe(req);
+			});
+			if (desc.length !== 64) return;
+
 			paths.filter(a=>!a.includes('..')).forEach(p => {
 				rawwrite('static', domain, p, desc);
 				create(domain, p, async () => {

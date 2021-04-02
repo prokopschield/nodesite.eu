@@ -1,6 +1,6 @@
 {
 	"name": "nodesite.eu",
-	"version": "1.0.18",
+	"version": "1.0.19",
 	"description": "Put your work online - the easy way.",
 	"main": "lib/nodesite.eu.js",
 	"dependencies": {
@@ -30,7 +30,7 @@
 		"nodesite.eu"
 	],
 	"author": "Prokop Schield",
-	"license": "MIT",
+	"license": "GPL-3.0-or-later",
 	"bugs": {
 		"url": "https://github.com/prokopschield/nodesite.eu/issues"
 	},
