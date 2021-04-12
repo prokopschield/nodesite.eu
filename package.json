@@ -1,8 +1,17 @@
 {
 	"name": "nodesite.eu",
-	"version": "1.0.19",
 	"description": "Put your work online - the easy way.",
+	"version": "1.0.20",
 	"main": "lib/nodesite.eu.js",
+	"bin": {
+		"nodesite.eu": "lib/nodesite-cli.js",
+		"nodesite": "lib/nodesite-cli.js"
+	},
+	"scripts": {
+		"test": "echo \"require('./nodesite.eu.js')('test', '/', console.log)\" | node"
+	},
+	"author": "Prokop Schield",
+	"license": "GPL-3.0-or-later",
 	"dependencies": {
 		"blakejs": "^1.1.0",
 		"mime-types": "^2.1.28",
@@ -13,13 +22,6 @@
 		"@types/node": "^14.14.21",
 		"@types/node-fetch": "^2.5.8"
 	},
-	"bin": {
-		"nodesite.eu": "./lib/nodesite-cli.js",
-		"nodesite": "./lib/nodesite-cli.js"
-	},
-	"scripts": {
-		"test": "echo \"require('./nodesite.eu.js')('test', '/', console.log)\" | node"
-	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/prokopschield/nodesite.eu.git"
@@ -29,10 +31,11 @@
 		"site",
 		"nodesite.eu"
 	],
-	"author": "Prokop Schield",
-	"license": "GPL-3.0-or-later",
 	"bugs": {
 		"url": "https://github.com/prokopschield/nodesite.eu/issues"
 	},
-	"homepage": "https://github.com/prokopschield/nodesite.eu#readme"
+	"homepage": "https://github.com/prokopschield/nodesite.eu#readme",
+	"directories": {
+		"lib": "lib"
+	}
 }
