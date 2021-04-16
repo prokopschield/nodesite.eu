@@ -1,9 +1,14 @@
 const libSocketIO = require('socket.io-client');
 const fs = require('fs');
-const blake = require('blakejs').blake2sHex;
+const blake: (input: string) => string = require('blakejs').blake2sHex;
 const pathslash = (process.platform === 'win32') ? '\\' : '/';
 const mime = require('mime-types').contentType
-const open_file_options = ['index.html', 'index.htm', pathslash + 'index.html', pathslash + 'index.htm'];
+const open_file_options = [
+	'index.html',
+	'index.htm',
+	pathslash + 'index.html',
+	pathslash + 'index.htm'
+];
 const BAD = 'Bad Gateway';
 import fetch from "node-fetch";
 
@@ -17,13 +22,15 @@ let sites: {
 	}
 } = {};
 
-type Listener = (request: NodeSiteRequest) => Promise<string|Buffer|{
+type ListenerResponse = string | Buffer | {
 	statusCode?: number;
 	body?: string|Buffer;
 	head?: {
 		[header: string]: string;
 	}
-}>;
+}
+
+type Listener = (request: NodeSiteRequest) => ListenerResponse | Promise<ListenerResponse>
 
 const deferred_challenges: Function[] = [];
 let solving = false;
@@ -341,7 +348,6 @@ NodeSiteClient.IOListener = IOListener;
 NodeSiteClient.NodeSiteClient = NodeSiteClient;
 export const { create, io } = NodeSiteClient;
 
-module.exports = NodeSiteClient;
 export {
 	NodeSiteClient,
 	init,
@@ -354,3 +360,28 @@ export function rawwrite (...args: any[]) {
 	insSocketIO.emit(...args);
 }
 NodeSiteClient.rawwrite = rawwrite;
+
+export {
+	blake,
+	deferred_challenges,
+	open_file_options,
+	requestHandlerProxy,
+	solved,
+
+	Listener,
+	ListenerResponse,
+	NodeSiteClientSocket,
+	NodeSiteRequest,
+	NodeSiteRequestHeaders,
+}
+
+Object.assign(NodeSiteClient, {
+	blake,
+	deferred_challenges,
+	open_file_options,
+	requestHandlerProxy,
+	solved,
+});
+
+export default NodeSiteClient;
+module.exports = NodeSiteClient;

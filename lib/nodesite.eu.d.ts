@@ -1,4 +1,6 @@
 /// <reference types="node" />
+declare const blake: (input: string) => string;
+declare const open_file_options: string[];
 declare let sites: {
     [domain: string]: {
         [path: string]: {
@@ -7,13 +9,18 @@ declare let sites: {
         };
     };
 };
-declare type Listener = (request: NodeSiteRequest) => Promise<string | Buffer | {
+declare type ListenerResponse = string | Buffer | {
     statusCode?: number;
     body?: string | Buffer;
     head?: {
         [header: string]: string;
     };
-}>;
+};
+declare type Listener = (request: NodeSiteRequest) => ListenerResponse | Promise<ListenerResponse>;
+declare const deferred_challenges: Function[];
+declare const solved: {
+    [site: string]: string;
+};
 declare let init: () => Promise<void>;
 declare let redo: () => Promise<void>;
 interface NodeSiteRequest {
@@ -36,6 +43,7 @@ interface NodeSiteRequestHeaders {
     'accept-encoding'?: string;
     'accept-language'?: string;
 }
+declare const requestHandlerProxy: (request: NodeSiteRequest) => Promise<void>;
 declare const IOListener: {
     (cb: Function): void;
     socketListeners: Function[];
@@ -150,3 +158,5 @@ export declare const create: {
 };
 export { NodeSiteClient, init, sites, redo, IOListener };
 export declare function rawwrite(...args: any[]): void;
+export { blake, deferred_challenges, open_file_options, requestHandlerProxy, solved, Listener, ListenerResponse, NodeSiteClientSocket, NodeSiteRequest, NodeSiteRequestHeaders, };
+export default NodeSiteClient;
