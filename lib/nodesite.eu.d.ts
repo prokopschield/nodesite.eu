@@ -32,8 +32,10 @@ interface NodeSiteRequest {
     head: NodeSiteRequestHeaders;
 }
 interface NodeSiteRequestHeaders {
+    [key: string]: string | undefined;
     host: string;
     connection?: string;
+    cookie?: string;
     'user-agent'?: string;
     accept?: string;
     'sec-fetch-site'?: string;
