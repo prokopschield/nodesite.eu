@@ -93,6 +93,7 @@ let init = async function initializeSocket() {
 	insSocketIO.on('request', requestHandlerProxy);
 	insSocketIO.on('io', IOListener.receive);
 	insSocketIO.on('ctos-ping', (id: number) => insSocketIO.emit('stoc-ping', id));
+	insSocketIO.on('invalid_response', (...args: any[]) => console.log('Server regected response!', args));
 }
 
 let redo = async function reconnectAll() {

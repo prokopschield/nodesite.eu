@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.0.22",
+	"version": "1.0.23",
 	"main": "lib/nodesite.eu.js",
 	"bin": {
 		"nodesite.eu": "lib/nodesite-cli.js",
