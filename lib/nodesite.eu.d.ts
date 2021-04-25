@@ -1,6 +1,8 @@
 /// <reference types="node" />
 declare const blake: (input: string) => string;
 declare const open_file_options: string[];
+import { Socket } from "socket.io-client";
+declare let insSocketIO: Socket;
 declare let sites: {
     [domain: string]: {
         [path: string]: {
@@ -46,10 +48,11 @@ interface NodeSiteRequestHeaders {
     'accept-language'?: string;
 }
 declare const requestHandlerProxy: (request: NodeSiteRequest) => Promise<void>;
+declare type NodeSiteSocketListener = (socket: NodeSiteClientSocket, site: string) => void;
 declare const IOListener: {
-    (cb: Function): void;
-    socketListeners: Function[];
-    registerSocketListener(cb: Function): void;
+    (cb: NodeSiteSocketListener): void;
+    socketListeners: Array<NodeSiteSocketListener>;
+    registerSocketListener(cb: NodeSiteSocketListener): void;
     newsocket(id: any): NodeSiteClientSocket;
     sockets: {
         [iid: number]: NodeSiteClientSocket;
@@ -89,9 +92,9 @@ declare const NodeSiteClient: {
     };
     redo: () => Promise<void>;
     io: {
-        (cb: Function): void;
-        socketListeners: Function[];
-        registerSocketListener(cb: Function): void;
+        (cb: NodeSiteSocketListener): void;
+        socketListeners: Array<NodeSiteSocketListener>;
+        registerSocketListener(cb: NodeSiteSocketListener): void;
         newsocket(id: any): NodeSiteClientSocket;
         sockets: {
             [iid: number]: NodeSiteClientSocket;
@@ -99,9 +102,9 @@ declare const NodeSiteClient: {
         receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
     };
     IOListener: {
-        (cb: Function): void;
-        socketListeners: Function[];
-        registerSocketListener(cb: Function): void;
+        (cb: NodeSiteSocketListener): void;
+        socketListeners: Array<NodeSiteSocketListener>;
+        registerSocketListener(cb: NodeSiteSocketListener): void;
         newsocket(id: any): NodeSiteClientSocket;
         sockets: {
             [iid: number]: NodeSiteClientSocket;
@@ -127,9 +130,9 @@ export declare const create: {
     };
     redo: () => Promise<void>;
     io: {
-        (cb: Function): void;
-        socketListeners: Function[];
-        registerSocketListener(cb: Function): void;
+        (cb: NodeSiteSocketListener): void;
+        socketListeners: Array<NodeSiteSocketListener>;
+        registerSocketListener(cb: NodeSiteSocketListener): void;
         newsocket(id: any): NodeSiteClientSocket;
         sockets: {
             [iid: number]: NodeSiteClientSocket;
@@ -137,9 +140,9 @@ export declare const create: {
         receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
     };
     IOListener: {
-        (cb: Function): void;
-        socketListeners: Function[];
-        registerSocketListener(cb: Function): void;
+        (cb: NodeSiteSocketListener): void;
+        socketListeners: Array<NodeSiteSocketListener>;
+        registerSocketListener(cb: NodeSiteSocketListener): void;
         newsocket(id: any): NodeSiteClientSocket;
         sockets: {
             [iid: number]: NodeSiteClientSocket;
@@ -149,9 +152,9 @@ export declare const create: {
     NodeSiteClient: any;
     rawwrite: typeof rawwrite;
 }, io: {
-    (cb: Function): void;
-    socketListeners: Function[];
-    registerSocketListener(cb: Function): void;
+    (cb: NodeSiteSocketListener): void;
+    socketListeners: Array<NodeSiteSocketListener>;
+    registerSocketListener(cb: NodeSiteSocketListener): void;
     newsocket(id: any): NodeSiteClientSocket;
     sockets: {
         [iid: number]: NodeSiteClientSocket;
@@ -159,6 +162,6 @@ export declare const create: {
     receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
 };
 export { NodeSiteClient, init, sites, redo, IOListener };
-export declare function rawwrite(...args: any[]): void;
-export { blake, deferred_challenges, open_file_options, requestHandlerProxy, solved, Listener, ListenerResponse, NodeSiteClientSocket, NodeSiteRequest, NodeSiteRequestHeaders, };
+export declare function rawwrite(e: string, ...args: any[]): void;
+export { blake, deferred_challenges, open_file_options, requestHandlerProxy, solved, insSocketIO, Listener, ListenerResponse, NodeSiteClientSocket, NodeSiteSocketListener, NodeSiteRequest, NodeSiteRequestHeaders, };
 export default NodeSiteClient;

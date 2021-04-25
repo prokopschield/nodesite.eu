@@ -11,8 +11,9 @@ const open_file_options = [
 ];
 const BAD = 'Bad Gateway';
 import fetch from "node-fetch";
+import { Socket } from "socket.io-client";
 
-let insSocketIO: any;
+let insSocketIO: Socket;
 let sites: {
 	[domain: string]: {
 		[path: string]: {
@@ -78,7 +79,6 @@ const solve = async function solveChallenge(site: string, code: string) {
 }
 
 let init = async function initializeSocket() {
-	if (insSocketIO) insSocketIO.removeAllListeners();
 	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) => r.text());
 	insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
 	insSocketIO.on('connect', redo);
@@ -94,6 +94,7 @@ let init = async function initializeSocket() {
 	insSocketIO.on('io', IOListener.receive);
 	insSocketIO.on('ctos-ping', (id: number) => insSocketIO.emit('stoc-ping', id));
 	insSocketIO.on('invalid_response', (...args: any[]) => console.log('Server regected response!', args));
+	Object.assign(NodeSiteClient, { insSocketIO });
 }
 
 let redo = async function reconnectAll() {
@@ -195,21 +196,23 @@ const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
 	};
 }
 
+type NodeSiteSocketListener = (socket: NodeSiteClientSocket, site: string) => void;
+
 const IOListener: {
-    (cb: Function): void;
-    socketListeners: Function[];
-    registerSocketListener(cb: Function): void;
+    (cb: NodeSiteSocketListener): void;
+    socketListeners: Array<NodeSiteSocketListener>;
+    registerSocketListener(cb: NodeSiteSocketListener): void;
     newsocket(id: any): NodeSiteClientSocket;
     sockets: {
 		[iid: number]: NodeSiteClientSocket;
 	};
     receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
-} = function NodeSiteIOListener(cb: Function) {
+} = function NodeSiteIOListener(cb: NodeSiteSocketListener) {
 	IOListener.registerSocketListener(cb);
 }
 
-IOListener.socketListeners = Array<Function>();
-IOListener.registerSocketListener = (cb: Function) => {
+IOListener.socketListeners = Array<NodeSiteClientSocket>();
+IOListener.registerSocketListener = (cb: NodeSiteSocketListener) => {
 	IOListener.socketListeners.push(cb);
 }
 
@@ -359,8 +362,8 @@ export {
 	IOListener
 }
 
-export function rawwrite (...args: any[]) {
-	insSocketIO.emit(...args);
+export function rawwrite (e: string, ...args: any[]) {
+	insSocketIO.emit(e, ...args);
 }
 NodeSiteClient.rawwrite = rawwrite;
 
@@ -371,9 +374,12 @@ export {
 	requestHandlerProxy,
 	solved,
 
+	insSocketIO,
+
 	Listener,
 	ListenerResponse,
 	NodeSiteClientSocket,
+	NodeSiteSocketListener,
 	NodeSiteRequest,
 	NodeSiteRequestHeaders,
 }
