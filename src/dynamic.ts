@@ -58,7 +58,7 @@ function dynamic (domain: string) {
 			rawwrite('static', domain, uri, ref);
 			console.log(`\rRegistered static route ${makewpath(uri, true)}`);
 			if ((ext === '.ts') || (ext === '.js')) {
-				const cachedir = path.resolve(__dirname, '.dyn-cache-dir');
+				const cachedir = path.resolve('.', '.dyn-cache-dir');
 				if (!fs.existsSync(cachedir)) fs.mkdirSync(cachedir);
 				const cp = path.resolve(cachedir, ref + ext);
 				await fs.promises.writeFile(cp, dat);
