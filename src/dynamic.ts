@@ -61,7 +61,9 @@ function dynamic (domain: string) {
 				const cachedir = path.resolve('.', '.dyn-cache-dir');
 				if (!fs.existsSync(cachedir)) fs.mkdirSync(cachedir);
 				const cp = path.resolve(cachedir, ref + ext);
-				await fs.promises.writeFile(cp, dat);
+				if (!fs.existsSync(cp) || ((await fs.promises.readFile(cp)).toString('utf8') !== dat.toString('utf8'))) {
+					await fs.promises.writeFile(cp, dat);
+				}
 				if (ext === '.ts') {
 					await new Promise(resolve => exec(`tsc --module CommonJS --esModuleInterop ${cp}`, resolve));
 				}
