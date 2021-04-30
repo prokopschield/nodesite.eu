@@ -317,6 +317,7 @@ const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/
 		}
 	}
 	let site = sites[domain];
+	path = `/${path}`.replace(/[\\\/]+/g, '/');
 	site[path] = {
 		listener,
 		file,

@@ -7,7 +7,7 @@ import { posix as path, resolve as syspath_resolve } from 'path';
 import { createReadStream, readdirSync, statSync } from 'fs';
 
 const options: {
-	action: 'init';
+	action: 'init' | 'dynamic';
 	site: string;
 	entry: string;
 } = {
@@ -23,6 +23,12 @@ for (const arg of process.argv) {
 			options.action = arg;
 			break;
 		}
+		case 'd':
+		case 'dyn':
+		case 'dynamic':
+		{
+			options.action = 'dynamic';
+		}
 		default:
 		{
 			options.site = arg;
@@ -32,6 +38,10 @@ for (const arg of process.argv) {
 }
 
 switch (options.action) {
+	case 'dynamic': {
+		require('./dynamic')(options.site);
+		break;
+	}
 	case 'init': {
 		if (!options.site || !options.entry) {
 			console.log(`Correct usage: nodesite init <domain>`);
