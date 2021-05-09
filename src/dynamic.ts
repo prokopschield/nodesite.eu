@@ -46,9 +46,16 @@ function dynamic (domain: string) {
 	function makewpath (p: string, d: boolean = false) {
 		return d ? `https://${domain}${path.resolve('/', p)}` : path.resolve('/', p);
 	}
+	const root = path.resolve('.');
+	const queue: string[] = [ root ];
+	const watcher = watch(root);
+	watcher.on('create', (file: string) => queue.push(file));
+	watcher.on('change', (file: string) => queue.push(file));
+	const cachedir = path.resolve('.', '.dyn-cache-dir');
 	async function f (p: string): Promise<boolean> {
 		try {
 			if (!fs.existsSync(p)) return false;
+			if (p.includes(cachedir)) return false;
 			const rel = path.relative('.', p);
 			const uri = makewpath(rel);
 			const ext = path.extname(p);
@@ -58,7 +65,6 @@ function dynamic (domain: string) {
 			rawwrite('static', domain, uri, ref);
 			console.log(`\rRegistered static route ${makewpath(uri, true)}`);
 			if ((ext === '.ts') || (ext === '.js')) {
-				const cachedir = path.resolve('.', '.dyn-cache-dir');
 				if (!fs.existsSync(cachedir)) fs.mkdirSync(cachedir);
 				const cp = path.resolve(cachedir, ref + ext);
 				if (!fs.existsSync(cp) || ((await fs.promises.readFile(cp)).toString('utf8') !== dat.toString('utf8'))) {
@@ -97,6 +103,7 @@ function dynamic (domain: string) {
 	async function d (p: string): Promise<boolean> {
 		console.log(`\rCrawling ${p}`);
 		for (const fn of fs.readdirSync(p)) {
+			if ((fn === 'node_modules') || (fn === '.git')) continue;
 			const fp = path.resolve(p, fn);
 			const stat = fs.statSync(fp);
 			if (stat.isFile()) {
@@ -109,11 +116,6 @@ function dynamic (domain: string) {
 		}
 		return true;
 	}
-	const root = path.resolve('.');
-	const queue: string[] = [ root ];
-	const watcher = watch(root);
-	watcher.on('create', (file: string) => queue.push(file));
-	watcher.on('change', (file: string) => queue.push(file));
 	function process (): undefined | Promise<undefined> {
 		const nv = queue.pop();
 		if (nv) {
