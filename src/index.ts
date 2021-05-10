@@ -1,11 +1,20 @@
-export {
-	NodeSiteClient,
+import {
 	create,
-	init,
-	sites,
-	redo,
-	IOListener,
-	io,
-	proxy,
-	rawwrite,
+	Listener,
 } from './nodesite.eu';
+import dynamic from './dynamic';
+
+function NodeSiteClient (domain: string, path?: string, listener?: Listener, file?: string): void {
+	return create(domain, path, listener, file);
+}
+
+export * from './nodesite.eu';
+
+export default NodeSiteClient;
+module.exports = NodeSiteClient;
+
+Object.assign(NodeSiteClient, {
+	default: NodeSiteClient,
+	...create,
+	dynamic,
+});
