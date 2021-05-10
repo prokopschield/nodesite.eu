@@ -44,7 +44,8 @@ function put (file: Buffer | string): Promise<string> {
 function dynamic (domain: string) {
 	domain = domain.includes('.') ? domain : `${domain}.nodesite.eu`;
 	function makewpath (p: string, d: boolean = false) {
-		return d ? `https://${domain}${path.resolve('/', p)}` : path.resolve('/', p);
+		p = p.replace(/[\\\/]+/g, '/');
+		return d ? `https://${domain}${path.posix.resolve('/', p)}` : path.posix.resolve('/', p);
 	}
 	const root = path.resolve('.');
 	const queue: string[] = [ root ];
