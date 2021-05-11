@@ -9,6 +9,7 @@ function NodeSiteClient (domain: string, path?: string, listener?: Listener, fil
 }
 
 export * from './nodesite.eu';
+export { dynamic }
 
 export default NodeSiteClient;
 module.exports = NodeSiteClient;
