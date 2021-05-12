@@ -142,7 +142,8 @@ function dynamic (domain: string) {
 			return ({ statusCode: 302, head: { Location: '/index' }});
 		} else {
 			console.log(`\rMissing URI requested: ${request.uri}`);
-			return ({ statusCode: 302, head: { Location: path.resolve(request.uri, '..') }});
+			return ({ statusCode: 302, head: { Location: '/404.html' }});
+			// Better 404 handling in a future version?
 		}
 	});
 	const { NodeSiteClient } = require('.');
