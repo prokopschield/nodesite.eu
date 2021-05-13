@@ -68,13 +68,13 @@ function dynamic (domain: string) {
 			if ((ext === '.ts') || (ext === '.js')) {
 				if (!fs.existsSync(cachedir)) fs.mkdirSync(cachedir);
 				const cp = path.resolve(cachedir, ref + ext);
+				const ce = path.resolve(cachedir, ref + '.js');
 				if (!fs.existsSync(cp) || ((await fs.promises.readFile(cp)).toString('utf8') !== dat.toString('utf8'))) {
 					await fs.promises.writeFile(cp, dat);
 				}
-				if (ext === '.ts') {
+				if (!fs.existsSync(ce) && (ext === '.ts')) {
 					await new Promise(resolve => exec(`tsc --module CommonJS --esModuleInterop ${cp}`, resolve));
 				}
-				const ce = path.resolve(cachedir, ref + '.js');
 				if (fs.existsSync(ce)) {
 					let handle = require(ce);
 					if (typeof handle !== 'function') {
