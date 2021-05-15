@@ -5,7 +5,7 @@ import https from 'https';
 import path from 'path';
 import { watch } from 'ts-hound';
 import { create, rawwrite } from '.';
-import { NodeSiteRequest } from './nodesite.eu';
+import { NodeSiteRequest, rewrite } from './nodesite.eu';
 
 const files: Map<string, string> = new Map;
 
@@ -134,16 +134,11 @@ function dynamic (domain: string) {
 	create(domain, '/', (request: NodeSiteRequest) => {
 		if (request.uri === '/404.html') {
 			return ({ statusCode: 404, body: `<h1>404 Not Found</h1>` });
-		} else if (request.uri === '/index.html') {
-			return ({ statusCode: 302, head: { Location: '/404.html' }});
-		} else if (request.uri === '/index') {
-			return ({ statusCode: 302, head: { Location: '/index.html' }});
 		} else if (request.uri === '/') {
-			return ({ statusCode: 302, head: { Location: '/index' }});
+			return rewrite(request, 'index.html');
 		} else {
 			console.log(`\rMissing URI requested: ${request.uri}`);
-			return ({ statusCode: 302, head: { Location: '/404.html' }});
-			// Better 404 handling in a future version?
+			return rewrite(request, '../../404.html');
 		}
 	});
 	const { NodeSiteClient } = require('.');

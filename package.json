@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-1",
+	"version": "1.2.0-2",
 	"main": "lib/index.js",
 	"bin": {
 		"nodesite.eu": "lib/nodesite-cli.js",
