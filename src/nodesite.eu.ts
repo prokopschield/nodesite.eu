@@ -12,6 +12,7 @@ const open_file_options = [
 const BAD = 'Bad Gateway';
 import fetch from "node-fetch";
 import { Socket } from "socket.io-client";
+import path from 'path';
 
 let insSocketIO: Socket;
 let sites: {
@@ -345,6 +346,11 @@ export const proxy = NodeSiteClient.proxy = function createProxy(hostListen: str
 	});
 }
 
+export function rewrite (request: NodeSiteRequest, uri: string): Promise<ListenerResponse> {
+	request.uri = path.posix.resolve(request.uri, uri);
+	return requestHandler(request);
+}
+
 NodeSiteClient.create = NodeSiteClient;
 NodeSiteClient.init = init;
 NodeSiteClient.sites = sites;
@@ -391,6 +397,7 @@ Object.assign(NodeSiteClient, {
 	open_file_options,
 	requestHandlerProxy,
 	solved,
+	rewrite,
 });
 
 export default NodeSiteClient;
