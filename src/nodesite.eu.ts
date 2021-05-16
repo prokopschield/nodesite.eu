@@ -94,15 +94,15 @@ let init = async function initializeSocket() {
 	insSocketIO.on('challenge_success', (site: string) => process.stdout.write("\rListening on https://" + site + "\n"));
 	insSocketIO.on('site_already_taken', (site: string) => {
 		const retry_after = config.__forceNumber('retry_after') || 600000;
-		console.log(`${site} is already taken!`);
-		console.log(`Scheduling re-try after ${retry_after / 1000} seconds.`);
+		console.log(`\r${site} is already taken!`);
+		console.log(`\rScheduling re-try after ${retry_after / 1000} seconds.`);
 		setTimeout(() => insSocketIO.emit('get_challenge'), retry_after);
 	});
 	insSocketIO.on('ping', (uuid: string) => insSocketIO.emit('pong', uuid));
 	insSocketIO.on('request', requestHandlerProxy);
 	insSocketIO.on('io', IOListener.receive);
 	insSocketIO.on('ctos-ping', (id: number) => insSocketIO.emit('stoc-ping', id));
-	insSocketIO.on('invalid_response', (...args: any[]) => console.log('Server regected response!', args));
+	insSocketIO.on('invalid_response', (...args: any[]) => console.log('\rServer regected response!', args));
 	Object.assign(NodeSiteClient, { insSocketIO });
 }
 
