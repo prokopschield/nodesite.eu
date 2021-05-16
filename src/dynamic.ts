@@ -53,10 +53,12 @@ function dynamic (domain: string) {
 	watcher.on('create', (file: string) => queue.push(file));
 	watcher.on('change', (file: string) => queue.push(file));
 	const cachedir = path.resolve('.', '.dyn-cache-dir');
+	const confdir = path.resolve('.', 'config');
 	async function f (p: string): Promise<boolean> {
 		try {
 			if (!fs.existsSync(p)) return false;
 			if (p.includes(cachedir)) return false;
+			if (p.includes(confdir)) return false;
 			const rel = path.relative('.', p);
 			const uri = makewpath(rel);
 			const ext = path.extname(p);

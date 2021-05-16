@@ -13,6 +13,10 @@ const BAD = 'Bad Gateway';
 import fetch from "node-fetch";
 import { Socket } from "socket.io-client";
 import path from 'path';
+import { getConfig } from 'doge-config';
+
+const config = getConfig('nodesite-eu-core');
+const solved = config.__getField('solved-challenges');
 
 let insSocketIO: Socket;
 let sites: {
@@ -37,16 +41,13 @@ type Listener = (request: NodeSiteRequest) => ListenerResponse | Promise<Listene
 const deferred_challenges: Function[] = [];
 let solving = false;
 
-const solved: {
-	[site: string]: string;
-} = {};
 const solve = async function solveChallenge(site: string, code: string) {
 	if (solving) {
 		deferred_challenges.push(() => solve(site, code));
 		return;
 	}
-	if (solved[code]) {
-		insSocketIO.emit('submit_challenge', site, solved[code]);
+	if (solved.__has(code)) {
+		insSocketIO.emit('submit_challenge', site, solved.__getString(code));
 		return;
 	}
 	solving = true;
@@ -68,7 +69,7 @@ const solve = async function solveChallenge(site: string, code: string) {
 		await new Promise(c => setTimeout(c, 30));
 		process.stdout.write("\r" + site + " loading " + ++p + "%");
 	}
-	solved[code] = nonce;
+	solved.__set(code, nonce);
 	insSocketIO.emit('submit_challenge', site, nonce);
 	if (deferred_challenges.length) {
 		setTimeout(() => {
@@ -91,6 +92,7 @@ let init = async function initializeSocket() {
 	insSocketIO.on('challenge_failed', (site: string) => insSocketIO.emit('get_challenge', site));
 	insSocketIO.on('set_challenge', solve);
 	insSocketIO.on('challenge_success', (site: string) => process.stdout.write("\rListening on https://" + site + "\n"));
+	insSocketIO.on('ping', (uuid: string) => insSocketIO.emit('pong', uuid));
 	insSocketIO.on('request', requestHandlerProxy);
 	insSocketIO.on('io', IOListener.receive);
 	insSocketIO.on('ctos-ping', (id: number) => insSocketIO.emit('stoc-ping', id));
@@ -379,6 +381,7 @@ export {
 	deferred_challenges,
 	open_file_options,
 	requestHandlerProxy,
+	config,
 	solved,
 
 	insSocketIO,
@@ -396,6 +399,7 @@ Object.assign(NodeSiteClient, {
 	deferred_challenges,
 	open_file_options,
 	requestHandlerProxy,
+	config,
 	solved,
 	rewrite,
 });

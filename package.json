@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-2",
+	"version": "1.2.0-3",
 	"main": "lib/index.js",
 	"bin": {
 		"nodesite.eu": "lib/nodesite-cli.js",
@@ -14,6 +14,7 @@
 	"license": "GPL-3.0-or-later",
 	"dependencies": {
 		"blakejs": "^1.1.0",
+		"doge-config": "^0.1.4",
 		"mime-types": "^2.1.28",
 		"node-fetch": "^2.6.1",
 		"socket.io-client": "^3.1.0",
