@@ -390,8 +390,6 @@ export {
 	config,
 	solved,
 
-	insSocketIO,
-
 	Listener,
 	ListenerResponse,
 	NodeSiteClientSocket,
