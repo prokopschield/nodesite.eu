@@ -359,6 +359,10 @@ export function rewrite (request: NodeSiteRequest, uri: string): Promise<Listene
 	return requestHandler(request);
 }
 
+export function direct (): Socket | undefined {
+	return insSocketIO;
+}
+
 NodeSiteClient.create = NodeSiteClient;
 NodeSiteClient.init = init;
 NodeSiteClient.sites = sites;
@@ -406,6 +410,7 @@ Object.assign(NodeSiteClient, {
 	config,
 	solved,
 	rewrite,
+	direct,
 });
 
 export default NodeSiteClient;
