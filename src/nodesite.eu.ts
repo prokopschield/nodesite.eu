@@ -10,10 +10,12 @@ const open_file_options = [
 	pathslash + 'index.htm'
 ];
 const BAD = 'Bad Gateway';
-import fetch from "node-fetch";
-import { Socket } from "socket.io-client";
-import path from 'path';
+
 import { getConfig } from 'doge-config';
+import { OutgoingHttpHeaders } from 'http';
+import fetch from "node-fetch";
+import path from 'path';
+import { Socket } from "socket.io-client";
 
 const config = getConfig('nodesite-eu-core');
 const solved = config.__getField('solved-challenges');
@@ -31,9 +33,7 @@ let sites: {
 type ListenerResponse = string | Buffer | {
 	statusCode?: number;
 	body?: string|Buffer;
-	head?: {
-		[header: string]: string;
-	}
+	head?: OutgoingHttpHeaders;
 }
 
 type Listener = (request: NodeSiteRequest) => ListenerResponse | Promise<ListenerResponse>
