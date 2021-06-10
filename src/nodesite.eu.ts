@@ -80,8 +80,12 @@ const solve = async function solveChallenge(site: string, code: string) {
 	} else solving = false;
 }
 
+let init_started = false;
 let init = async function initializeSocket() {
+	init_started = true;
 	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) => r.text());
+	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
+	// make sure old socket does not respond to pings
 	insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
 	insSocketIO.on('connect', redo);
 	insSocketIO.on('error', redo);
@@ -319,11 +323,8 @@ const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		if (insSocketIO) {
-			insSocketIO.emit('get_challenge', domain);
-		} else {
-			init();
-		}
+		NodeSiteClient.ready
+		.then((socket) => socket.emit('get_challenge', domain))
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');
@@ -363,6 +364,34 @@ export function direct (): Socket | undefined {
 	return insSocketIO;
 }
 
+export function rawwrite (e: string, ...args: any[]) {
+	insSocketIO.emit(e, ...args);
+}
+
+
+//////////////////////////////////////////////////////////////////////
+export const ready_promise = init().then(() => insSocketIO);
+NodeSiteClient.ready_promise = ready_promise;
+
+Object.defineProperty(NodeSiteClient, 'ready', {
+	get (): Promise<Socket> {
+		return ready_promise;
+	},
+	set (cb: Promise<any> | ((socket: Socket) => any)) {
+		(typeof cb === 'function')
+		? ready_promise.then(cb)
+		: ready_promise.then((socket) => cb.then((cb) => (
+			(typeof cb === 'function')
+			&& cb(socket)
+		)))
+	},
+	enumerable: true,
+});
+
+export const ready = ready_promise;
+NodeSiteClient.ready = ready_promise;
+//////////////////////////////////////////////////////////////////////
+
 NodeSiteClient.create = NodeSiteClient;
 NodeSiteClient.init = init;
 NodeSiteClient.sites = sites;
@@ -380,11 +409,6 @@ export {
 	redo,
 	IOListener
 }
-
-export function rawwrite (e: string, ...args: any[]) {
-	insSocketIO.emit(e, ...args);
-}
-NodeSiteClient.rawwrite = rawwrite;
 
 export {
 	blake,
@@ -409,6 +433,7 @@ Object.assign(NodeSiteClient, {
 	requestHandlerProxy,
 	config,
 	solved,
+	rawwrite,
 	rewrite,
 	direct,
 });
