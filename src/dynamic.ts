@@ -1,4 +1,4 @@
-const { blake2sHex } = require('blakejs');
+import { blake2sHex } from 'blakets';
 import { exec } from 'child_process';
 import fs from 'fs';
 import https from 'https';

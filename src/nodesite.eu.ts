@@ -1,21 +1,20 @@
-const libSocketIO = require('socket.io-client');
-const fs = require('fs');
-const blake: (input: string) => string = require('blakejs').blake2sHex;
+import { blake2sHex as blake } from 'blakets';
+import { getConfig } from 'doge-config';
+import fs from 'fs';
+import { OutgoingHttpHeaders } from 'http';
+import { contentType as mime } from 'mime-types';
+import fetch from "node-fetch";
+import path from 'path';
+import { io as libSocketIO, Socket } from "socket.io-client";
+
 const pathslash = (process.platform === 'win32') ? '\\' : '/';
-const mime = require('mime-types').contentType
+const BAD = 'Bad Gateway';
 const open_file_options = [
 	'index.html',
 	'index.htm',
 	pathslash + 'index.html',
 	pathslash + 'index.htm'
 ];
-const BAD = 'Bad Gateway';
-
-import { getConfig } from 'doge-config';
-import { OutgoingHttpHeaders } from 'http';
-import fetch from "node-fetch";
-import path from 'path';
-import { Socket } from "socket.io-client";
 
 const config = getConfig('nodesite-eu-core');
 const solved = config.__getField('solved-challenges');
@@ -199,7 +198,7 @@ const requestHandler = async (request: NodeSiteRequest) => {
 const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
 	let data = fs.readFileSync(file);
 	let head = {
-		'Content-Type': mime(file.split(/[\\\/]+/).pop()),
+		'Content-Type': mime(file.split(/[\\\/]+/).pop() || '') || 'text/plain',
 		'Content-Length': data.length
 	}
 	let body = data;
