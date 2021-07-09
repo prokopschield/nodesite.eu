@@ -3,17 +3,17 @@ import { getConfig } from 'doge-config';
 import fs from 'fs';
 import { OutgoingHttpHeaders } from 'http';
 import { contentType as mime } from 'mime-types';
-import fetch from "node-fetch";
+import fetch from 'node-fetch';
 import path from 'path';
-import { io as libSocketIO, Socket } from "socket.io-client";
+import { io as libSocketIO, Socket } from 'socket.io-client';
 
-const pathslash = (process.platform === 'win32') ? '\\' : '/';
+const pathslash = process.platform === 'win32' ? '\\' : '/';
 const BAD = 'Bad Gateway';
 const open_file_options = [
 	'index.html',
 	'index.htm',
 	pathslash + 'index.html',
-	pathslash + 'index.htm'
+	pathslash + 'index.htm',
 ];
 
 const config = getConfig('nodesite-eu-core');
@@ -25,17 +25,22 @@ let sites: {
 		[path: string]: {
 			listener?: Listener;
 			file?: string;
-		}
-	}
+		};
+	};
 } = {};
 
-type ListenerResponse = string | Buffer | {
-	statusCode?: number;
-	body?: string|Buffer;
-	head?: OutgoingHttpHeaders;
-}
+type ListenerResponse =
+	| string
+	| Buffer
+	| {
+			statusCode?: number;
+			body?: string | Buffer;
+			head?: OutgoingHttpHeaders;
+	  };
 
-type Listener = (request: NodeSiteRequest) => ListenerResponse | Promise<ListenerResponse>
+type Listener = (
+	request: NodeSiteRequest
+) => ListenerResponse | Promise<ListenerResponse>;
 
 const deferred_challenges: Function[] = [];
 let solving = false;
@@ -51,22 +56,28 @@ const solve = async function solveChallenge(site: string, code: string) {
 	}
 	solving = true;
 	let p = 0,
-		o = (16 ** code.length) / 32,
+		o = 16 ** code.length / 32,
 		i = 0;
 	let nonce = code + site;
 	let nonceb: string;
-	while ((nonceb = (blake(nonce))).substr(0, code.length) !== code.substr(0, code.length)) {
-		for (let i = 0;
-			(i < o) && ((nonceb = (blake(nonce))).substr(0, code.length) !== code.substr(0, code.length));
+	while (
+		(nonceb = blake(nonce)).substr(0, code.length) !==
+		code.substr(0, code.length)
+	) {
+		for (
+			let i = 0;
+			i < o &&
+			(nonceb = blake(nonce)).substr(0, code.length) !==
+				code.substr(0, code.length);
 			++i
 		) {
 			nonce = code + nonceb;
 		}
-		process.stdout.write("\r" + site + " loading " + ++p + "%");
+		process.stdout.write('\r' + site + ' loading ' + ++p + '%');
 	}
 	while (p < 100) {
-		await new Promise(c => setTimeout(c, 30));
-		process.stdout.write("\r" + site + " loading " + ++p + "%");
+		await new Promise((c) => setTimeout(c, 30));
+		process.stdout.write('\r' + site + ' loading ' + ++p + '%');
 	}
 	solved.__set(code, nonce);
 	insSocketIO.emit('submit_challenge', site, nonce);
@@ -77,12 +88,14 @@ const solve = async function solveChallenge(site: string, code: string) {
 			if (typeof fun === 'function') fun();
 		}, 300);
 	} else solving = false;
-}
+};
 
 let init_started = false;
 let init = async function initializeSocket() {
 	init_started = true;
-	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) => r.text());
+	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) =>
+		r.text()
+	);
 	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
 	// make sure old socket does not respond to pings
 	insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
@@ -90,11 +103,19 @@ let init = async function initializeSocket() {
 	insSocketIO.on('error', redo);
 	insSocketIO.on('death', redo);
 	insSocketIO.on('disconnect', redo);
-	insSocketIO.on('deauth', (site: string) => insSocketIO.emit('new_challenge_if_unauthed', site));
-	insSocketIO.on('invalid_challenge', (site: string) => insSocketIO.emit('get_challenge', site));
-	insSocketIO.on('challenge_failed', (site: string) => insSocketIO.emit('get_challenge', site));
+	insSocketIO.on('deauth', (site: string) =>
+		insSocketIO.emit('new_challenge_if_unauthed', site)
+	);
+	insSocketIO.on('invalid_challenge', (site: string) =>
+		insSocketIO.emit('get_challenge', site)
+	);
+	insSocketIO.on('challenge_failed', (site: string) =>
+		insSocketIO.emit('get_challenge', site)
+	);
 	insSocketIO.on('set_challenge', solve);
-	insSocketIO.on('challenge_success', (site: string) => process.stdout.write("\rListening on https://" + site + "\n"));
+	insSocketIO.on('challenge_success', (site: string) =>
+		process.stdout.write('\rListening on https://' + site + '\n')
+	);
 	insSocketIO.on('site_already_taken', (site: string) => {
 		const retry_after = config.__forceNumber('retry_after') || 600000;
 		console.log(`\r${site} is already taken!`);
@@ -104,58 +125,65 @@ let init = async function initializeSocket() {
 	insSocketIO.on('ping', (uuid: string) => insSocketIO.emit('pong', uuid));
 	insSocketIO.on('request', requestHandlerProxy);
 	insSocketIO.on('io', IOListener.receive);
-	insSocketIO.on('ctos-ping', (id: number) => insSocketIO.emit('stoc-ping', id));
-	insSocketIO.on('invalid_response', (...args: any[]) => console.log('\rServer regected response!', args));
+	insSocketIO.on('ctos-ping', (id: number) =>
+		insSocketIO.emit('stoc-ping', id)
+	);
+	insSocketIO.on('invalid_response', (...args: any[]) =>
+		console.log('\rServer regected response!', args)
+	);
 	Object.assign(NodeSiteClient, { insSocketIO });
-}
+};
 
 let redo = async function reconnectAll() {
 	for (const n in sites) {
 		insSocketIO.emit('get_challenge', n);
 	}
-}
+};
 
 interface NodeSiteRequest {
-	iid: number,
-	host: string,
-	method: string,
-	uri: string,
-	body: string | Buffer,
-	head: NodeSiteRequestHeaders
+	iid: number;
+	host: string;
+	method: string;
+	uri: string;
+	body: string | Buffer;
+	head: NodeSiteRequestHeaders;
 }
 
 interface NodeSiteRequestHeaders {
 	[key: string]: string | undefined;
-	host: string,
-	connection?: string,
+	host: string;
+	connection?: string;
 	cookie?: string;
-	'user-agent'?: string,
-	accept?: string,
-	'sec-fetch-site'?: string,
-	'sec-fetch-mode'?: string,
-	'sec-fetch-dest'?: string,
-	referer?: string,
-	'accept-encoding'?: string,
-	'accept-language'?: string
+	'user-agent'?: string;
+	accept?: string;
+	'sec-fetch-site'?: string;
+	'sec-fetch-mode'?: string;
+	'sec-fetch-dest'?: string;
+	referer?: string;
+	'accept-encoding'?: string;
+	'accept-language'?: string;
 }
 
 const requestHandlerProxy = async (request: NodeSiteRequest) => {
 	let response = await requestHandler(request);
 	if (response == BAD) return;
-	if ((typeof response !== 'object') || (response instanceof Uint8Array)) {
-		response = ({
-			body: response
-		});
+	if (typeof response !== 'object' || response instanceof Uint8Array) {
+		response = {
+			body: response,
+		};
 	}
 	insSocketIO.emit('response', request.iid, response);
-}
+};
 
 const requestHandler = async (request: NodeSiteRequest) => {
 	let site = sites[request.host];
 	if (!site) {
 		if (!(site = sites['*'])) return BAD;
 	}
-	let path = ((request.uri.split('?').shift()) + '/').replace(/\.\.+/, '.').replace(/[\/\\]+/g, '/').split('/');
+	let path = (request.uri.split('?').shift() + '/')
+		.replace(/\.\.+/, '.')
+		.replace(/[\/\\]+/g, '/')
+		.split('/');
 	let localpath = [];
 	while (path.length) {
 		localpath.unshift(path.pop());
@@ -169,10 +197,16 @@ const requestHandler = async (request: NodeSiteRequest) => {
 					let f = sf.file;
 					let stat = fs.statSync(f);
 					if (stat.isDirectory()) {
-						if (fs.existsSync(f + lpath) && !fs.statSync(f + lpath).isDirectory()) {
+						if (
+							fs.existsSync(f + lpath) &&
+							!fs.statSync(f + lpath).isDirectory()
+						) {
 							return fileReadHandler(f + lpath);
 						}
-						if (fs.existsSync(f + pathslash + lpath) && !fs.statSync(f + pathslash + lpath).isDirectory()) {
+						if (
+							fs.existsSync(f + pathslash + lpath) &&
+							!fs.statSync(f + pathslash + lpath).isDirectory()
+						) {
 							return fileReadHandler(f + pathslash + lpath);
 						}
 						for (const o in open_file_options) {
@@ -191,42 +225,45 @@ const requestHandler = async (request: NodeSiteRequest) => {
 		}
 	}
 	return {
-		statusCode: 404
-	}
-}
+		statusCode: 404,
+	};
+};
 
 const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
 	let data = fs.readFileSync(file);
 	let head = {
 		'Content-Type': mime(file.split(/[\\\/]+/).pop() || '') || 'text/plain',
-		'Content-Length': data.length
-	}
+		'Content-Length': data.length,
+	};
 	let body = data;
 	return {
 		head,
-		body
+		body,
 	};
-}
+};
 
-type NodeSiteSocketListener = (socket: NodeSiteClientSocket, site: string) => void;
+type NodeSiteSocketListener = (
+	socket: NodeSiteClientSocket,
+	site: string
+) => void;
 
 const IOListener: {
-    (cb: NodeSiteSocketListener): void;
-    socketListeners: Array<NodeSiteSocketListener>;
-    registerSocketListener(cb: NodeSiteSocketListener): void;
-    newsocket(id: any): NodeSiteClientSocket;
-    sockets: {
+	(cb: NodeSiteSocketListener): void;
+	socketListeners: Array<NodeSiteSocketListener>;
+	registerSocketListener(cb: NodeSiteSocketListener): void;
+	newsocket(id: any): NodeSiteClientSocket;
+	sockets: {
 		[iid: number]: NodeSiteClientSocket;
 	};
-    receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
+	receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
 } = function NodeSiteIOListener(cb: NodeSiteSocketListener) {
 	IOListener.registerSocketListener(cb);
-}
+};
 
 IOListener.socketListeners = Array<NodeSiteClientSocket>();
 IOListener.registerSocketListener = (cb: NodeSiteSocketListener) => {
 	IOListener.socketListeners.push(cb);
-}
+};
 
 interface NodeSiteClientSocket {
 	(...args: Array<any>): void;
@@ -236,7 +273,7 @@ interface NodeSiteClientSocket {
 		[e: string]: {
 			perm: Function[];
 			once: Function[];
-		}
+		};
 	};
 	listenersAny: Function[];
 	onAny(f: Function): number;
@@ -264,7 +301,7 @@ IOListener.newsocket = function createSocket(id) {
 			socket.listeners[event] = {
 				perm: [],
 				once: [],
-			}
+			};
 		}
 		if (once) {
 			socket.listeners[event].once.push(cb);
@@ -302,11 +339,16 @@ IOListener.newsocket = function createSocket(id) {
 				}
 			}
 		}
-	}
+	};
 	return socket;
-}
+};
 IOListener.sockets = {};
-IOListener.receive = async (id: number, site: string, e: string, args: Array<any>) => {
+IOListener.receive = async (
+	id: number,
+	site: string,
+	e: string,
+	args: Array<any>
+) => {
 	if (!IOListener.sockets[id]) {
 		IOListener.sockets[id] = IOListener.newsocket(id);
 		for (const n in IOListener.socketListeners) {
@@ -314,75 +356,88 @@ IOListener.receive = async (id: number, site: string, e: string, args: Array<any
 		}
 	}
 	IOListener.sockets[id].receive(e, args || []);
-}
+};
 
-
-const NodeSiteClient = function NodeSiteClient(domain: string, path: string = '/', listener?: Listener, file: string = '') {
+const NodeSiteClient = function NodeSiteClient(
+	domain: string,
+	path: string = '/',
+	listener?: Listener,
+	file: string = ''
+) {
 	domain = domain.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		NodeSiteClient.ready
-		.then((socket) => socket.emit('get_challenge', domain))
+		NodeSiteClient.ready.then((socket) => socket.emit('get_challenge', domain));
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');
 	site[path] = {
 		listener,
 		file,
-	}
-}
+	};
+};
 
-export const proxy = NodeSiteClient.proxy = function createProxy(hostListen: string, hostPath = '/', urlPoint = 'localhost:8080', fetchOptions = {}) {
-	return NodeSiteClient(hostListen, hostPath || '/', async (request: NodeSiteRequest) => {
-		let uri = urlPoint + request.uri;
-		uri = uri.replace('/\/+/', '/');
-		const res = await fetch(uri, fetchOptions);
-		let head: {
-			[header: string]: string;
-		} = {};
-		for (const c in res.headers.keys()) {
-			const h = res.headers.get(c);
-			if (h) {
-				head[c] = h;
+export const proxy = (NodeSiteClient.proxy = function createProxy(
+	hostListen: string,
+	hostPath = '/',
+	urlPoint = 'localhost:8080',
+	fetchOptions = {}
+) {
+	return NodeSiteClient(
+		hostListen,
+		hostPath || '/',
+		async (request: NodeSiteRequest) => {
+			let uri = urlPoint + request.uri;
+			uri = uri.replace('//+/', '/');
+			const res = await fetch(uri, fetchOptions);
+			let head: {
+				[header: string]: string;
+			} = {};
+			for (const c in res.headers.keys()) {
+				const h = res.headers.get(c);
+				if (h) {
+					head[c] = h;
+				}
 			}
+			return {
+				head,
+				body: await res.buffer(),
+			};
 		}
-		return {
-			head,
-			body: await res.buffer()
-		};
-	});
-}
+	);
+});
 
-export function rewrite (request: NodeSiteRequest, uri: string): Promise<ListenerResponse> {
+export function rewrite(
+	request: NodeSiteRequest,
+	uri: string
+): Promise<ListenerResponse> {
 	request.uri = path.posix.resolve(request.uri, uri);
 	return requestHandler(request);
 }
 
-export function direct (): Socket | undefined {
+export function direct(): Socket | undefined {
 	return insSocketIO;
 }
 
-export function rawwrite (e: string, ...args: any[]) {
+export function rawwrite(e: string, ...args: any[]) {
 	insSocketIO.emit(e, ...args);
 }
-
 
 //////////////////////////////////////////////////////////////////////
 export const ready_promise = init().then(() => insSocketIO);
 NodeSiteClient.ready_promise = ready_promise;
 
 Object.defineProperty(NodeSiteClient, 'ready', {
-	get (): Promise<Socket> {
+	get(): Promise<Socket> {
 		return ready_promise;
 	},
-	set (cb: Promise<any> | ((socket: Socket) => any)) {
-		(typeof cb === 'function')
-		? ready_promise.then(cb)
-		: ready_promise.then((socket) => cb.then((cb) => (
-			(typeof cb === 'function')
-			&& cb(socket)
-		)))
+	set(cb: Promise<any> | ((socket: Socket) => any)) {
+		typeof cb === 'function'
+			? ready_promise.then(cb)
+			: ready_promise.then((socket) =>
+					cb.then((cb) => typeof cb === 'function' && cb(socket))
+			  );
 	},
 	enumerable: true,
 });
@@ -401,13 +456,7 @@ NodeSiteClient.IOListener = IOListener;
 NodeSiteClient.NodeSiteClient = NodeSiteClient;
 export const { create, io } = NodeSiteClient;
 
-export {
-	NodeSiteClient,
-	init,
-	sites,
-	redo,
-	IOListener
-}
+export { NodeSiteClient, init, sites, redo, IOListener };
 
 export {
 	blake,
@@ -416,14 +465,13 @@ export {
 	requestHandlerProxy,
 	config,
 	solved,
-
 	Listener,
 	ListenerResponse,
 	NodeSiteClientSocket,
 	NodeSiteSocketListener,
 	NodeSiteRequest,
 	NodeSiteRequestHeaders,
-}
+};
 
 Object.assign(NodeSiteClient, {
 	blake,

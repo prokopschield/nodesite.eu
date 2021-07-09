@@ -20,19 +20,24 @@ create('foobar', '/', (request) => rewrite('404.html'), 'public/');
 ```javascript
 const { create } = require('nodesite.eu');
 
-create('fun', '/',      () => ({ statusCode: 302, head: { Location: '/three' } }));
-create('fun', '/three', () => ({ statusCode: 302, head: { Location: '/two' } }));
-create('fun', '/two',   () => ({ statusCode: 302, head: { Location: '/one' } }));
-create('fun', '/one',   () => ({ statusCode: 302, head: { Location: 'https://therickroll.com' } }));
+create('fun', '/', () => ({ statusCode: 302, head: { Location: '/three' } }));
+create('fun', '/three', () => ({
+	statusCode: 302,
+	head: { Location: '/two' },
+}));
+create('fun', '/two', () => ({ statusCode: 302, head: { Location: '/one' } }));
+create('fun', '/one', () => ({
+	statusCode: 302,
+	head: { Location: 'https://therickroll.com' },
+}));
 ```
 
 #### Check out everyone else's work!
 
-[List of NodeSites](<https://index.nodesite.eu>)
+[List of NodeSites](https://index.nodesite.eu)
 
 ### And remember to have fun! <3
 
-(c) 2021 - Licensed under the [GNU GPL](<https://gnu.org/licenses/gpl>), sources are on [GitHub](<https://github.com/prokopschield/nodesite.eu/>)
+(c) 2021 - Licensed under the [GNU GPL](https://gnu.org/licenses/gpl), sources are on [GitHub](https://github.com/prokopschield/nodesite.eu/)
 
 Don't be evil.
-

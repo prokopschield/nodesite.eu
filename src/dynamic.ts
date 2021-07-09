@@ -7,54 +7,64 @@ import { watch } from 'ts-hound';
 import { create, rawwrite } from '.';
 import { NodeSiteRequest, rewrite } from './nodesite.eu';
 
-const files: Map<string, string> = new Map;
+const files: Map<string, string> = new Map();
 
-function put (file: Buffer | string): Promise<string> {
+function put(file: Buffer | string): Promise<string> {
 	let hash = blake2sHex(file);
-	return new Promise(resolve => {
+	return new Promise((resolve) => {
 		let cached = files.get(hash);
 		if (cached) return resolve(cached);
-		if (file.length > ( 1 << 24 )) {
+		if (file.length > 1 << 24) {
 			return put('Error: Payload Too Large');
 		}
-		const req = https.request('https://cdn.nodesite.eu/static/put/', {
-			method: 'PUT',
-			headers: {
-				'Content-Type': 'application/octet-stream',
+		const req = https.request(
+			'https://cdn.nodesite.eu/static/put/',
+			{
+				method: 'PUT',
+				headers: {
+					'Content-Type': 'application/octet-stream',
+				},
 			},
-		}, (res) => {
-			let buffers: Buffer[] = [];
-			res.on('error', () => put('An error occured while this file was being processed.').then(resolve));
-			res.on('data', (chunk: Buffer) => buffers.push(chunk));
-			res.on('end', () => {
-				const bref = Buffer.concat(buffers);
-				const ref = bref.toString();
-				// ref is 64 hex chars or uuid
-				if (ref.match(/^[0-9a-f\-]{64,68}$/)) {
-					files.set(hash, ref);
-					return resolve(ref);
-				} else put(bref).then(resolve);
-			});
-		});
+			(res) => {
+				let buffers: Buffer[] = [];
+				res.on('error', () =>
+					put('An error occured while this file was being processed.').then(
+						resolve
+					)
+				);
+				res.on('data', (chunk: Buffer) => buffers.push(chunk));
+				res.on('end', () => {
+					const bref = Buffer.concat(buffers);
+					const ref = bref.toString();
+					// ref is 64 hex chars or uuid
+					if (ref.match(/^[0-9a-f\-]{64,68}$/)) {
+						files.set(hash, ref);
+						return resolve(ref);
+					} else put(bref).then(resolve);
+				});
+			}
+		);
 		req.write(file);
 		req.end();
 	});
 }
 
-function dynamic (domain: string) {
+function dynamic(domain: string) {
 	domain = domain.includes('.') ? domain : `${domain}.nodesite.eu`;
-	function makewpath (p: string, d: boolean = false) {
+	function makewpath(p: string, d: boolean = false) {
 		p = p.replace(/[\\\/]+/g, '/');
-		return d ? `https://${domain}${path.posix.resolve('/', p)}` : path.posix.resolve('/', p);
+		return d
+			? `https://${domain}${path.posix.resolve('/', p)}`
+			: path.posix.resolve('/', p);
 	}
 	const root = path.resolve('.');
-	const queue: string[] = [ root ];
+	const queue: string[] = [root];
 	const watcher = watch(root);
 	watcher.on('create', (file: string) => queue.push(file));
 	watcher.on('change', (file: string) => queue.push(file));
 	const cachedir = path.resolve('.', '.dyn-cache-dir');
 	const confdir = path.resolve('.', 'config');
-	async function f (p: string): Promise<boolean> {
+	async function f(p: string): Promise<boolean> {
 		try {
 			if (!fs.existsSync(p)) return false;
 			if (p.includes(cachedir)) return false;
@@ -67,15 +77,21 @@ function dynamic (domain: string) {
 			create(domain, uri, void null, p);
 			rawwrite('static', domain, uri, ref);
 			console.log(`\rRegistered static route ${makewpath(uri, true)}`);
-			if ((ext === '.ts') || (ext === '.js')) {
+			if (ext === '.ts' || ext === '.js') {
 				if (!fs.existsSync(cachedir)) fs.mkdirSync(cachedir);
 				const cp = path.resolve(cachedir, ref + ext);
 				const ce = path.resolve(cachedir, ref + '.js');
-				if (!fs.existsSync(cp) || ((await fs.promises.readFile(cp)).toString('utf8') !== dat.toString('utf8'))) {
+				if (
+					!fs.existsSync(cp) ||
+					(await fs.promises.readFile(cp)).toString('utf8') !==
+						dat.toString('utf8')
+				) {
 					await fs.promises.writeFile(cp, dat);
 				}
-				if (!fs.existsSync(ce) && (ext === '.ts')) {
-					await new Promise(resolve => exec(`tsc --module CommonJS --esModuleInterop ${cp}`, resolve));
+				if (!fs.existsSync(ce) && ext === '.ts') {
+					await new Promise((resolve) =>
+						exec(`tsc --module CommonJS --esModuleInterop ${cp}`, resolve)
+					);
 				}
 				if (fs.existsSync(ce)) {
 					let handle = require(ce);
@@ -89,11 +105,15 @@ function dynamic (domain: string) {
 					if (typeof handle === 'function') {
 						let route = uri.split(/\./g).slice(0, -1).join('.');
 						create(domain, route, handle);
-						console.log(`\rRegistered scripted handle ${makewpath(route, true)}`);
+						console.log(
+							`\rRegistered scripted handle ${makewpath(route, true)}`
+						);
 						if (route.match(/\/index$/)) {
 							route = route.replace(/\/index$/, '');
 							create(domain, route, handle);
-							console.log(`\rRegistered scripted handle ${makewpath(route, true)}`);
+							console.log(
+								`\rRegistered scripted handle ${makewpath(route, true)}`
+							);
 						}
 					}
 				}
@@ -103,23 +123,23 @@ function dynamic (domain: string) {
 			return false;
 		}
 	}
-	async function d (p: string): Promise<boolean> {
+	async function d(p: string): Promise<boolean> {
 		console.log(`\rCrawling ${p}`);
 		for (const fn of fs.readdirSync(p)) {
-			if ((fn === 'node_modules') || (fn === '.git')) continue;
+			if (fn === 'node_modules' || fn === '.git') continue;
 			const fp = path.resolve(p, fn);
 			const stat = fs.statSync(fp);
 			if (stat.isFile()) {
-				await f (fp);
+				await f(fp);
 			} else if (stat.isDirectory()) {
-				await d (fp);
+				await d(fp);
 			} else {
 				console.log(`\rSkipping bad file descriptor ${fp}`);
 			}
 		}
 		return true;
 	}
-	function process (): undefined | Promise<undefined> {
+	function process(): undefined | Promise<undefined> {
 		const nv = queue.pop();
 		if (nv) {
 			if (!fs.existsSync(nv)) return process();
@@ -135,7 +155,7 @@ function dynamic (domain: string) {
 	}
 	create(domain, '/', (request: NodeSiteRequest) => {
 		if (request.uri === '/404.html') {
-			return ({ statusCode: 404, body: `<h1>404 Not Found</h1>` });
+			return { statusCode: 404, body: `<h1>404 Not Found</h1>` };
 		} else if (request.uri === '/') {
 			return rewrite(request, 'index.html');
 		} else {
@@ -144,7 +164,7 @@ function dynamic (domain: string) {
 		}
 	});
 	const { NodeSiteClient } = require('.');
-	function start () {
+	function start() {
 		if (NodeSiteClient.insSocketIO) {
 			NodeSiteClient.insSocketIO.on('challenge_success', process);
 		} else {

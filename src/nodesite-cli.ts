@@ -14,23 +14,20 @@ const options: {
 	action: 'init',
 	site: 'cli-default',
 	entry: process.env.index || process.env.entry || 'index.html',
-}
+};
 
 for (const arg of process.argv) {
 	switch (arg) {
-		case 'init':
-		{
+		case 'init': {
 			options.action = arg;
 			break;
 		}
 		case 'd':
 		case 'dyn':
-		case 'dynamic':
-		{
+		case 'dynamic': {
 			options.action = 'dynamic';
 		}
-		default:
-		{
+		default: {
 			options.site = arg;
 			break;
 		}
@@ -50,7 +47,7 @@ switch (options.action) {
 		let domain = options.site.toLowerCase().replace(/[^a-z0-9\-\.]/g, '');
 		domain.match(/[^a-z0-9\-]/) ? domain : (domain += '.nodesite.eu');
 		create(domain, '/', void 0, '.');
-		async function uploadFile (file: string, paths?: string[]) {
+		async function uploadFile(file: string, paths?: string[]) {
 			paths ||= [
 				path.format({
 					root: '/',
@@ -71,35 +68,41 @@ switch (options.action) {
 			];
 
 			let desc: string = '';
-			await new Promise(resolve => {
-				const req = https.request('https://hosting.nodesite.eu/static/upload', {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/octet-stream',
-						'X-NodeSite': 'NodeSite-CLI',
+			await new Promise((resolve) => {
+				const req = https.request(
+					'https://hosting.nodesite.eu/static/upload',
+					{
+						method: 'PUT',
+						headers: {
+							'Content-Type': 'application/octet-stream',
+							'X-NodeSite': 'NodeSite-CLI',
+						},
 					},
-				}, (res) => {
-					res.on('data', b => desc += b);
-					res.on('end', resolve);
-				});
+					(res) => {
+						res.on('data', (b) => (desc += b));
+						res.on('end', resolve);
+					}
+				);
 				createReadStream(file).pipe(req);
 			});
 			if (desc.length !== 64) return;
 
-			paths.filter(a=>!a.includes('..')).forEach(p => {
-				rawwrite('static', domain, p, desc);
-				create(domain, p, async () => {
+			paths
+				.filter((a) => !a.includes('..'))
+				.forEach((p) => {
 					rawwrite('static', domain, p, desc);
-					return ({
-						statusCode: 302,
-						head: {
-							location: `https://${domain}${p}`,
-						}
+					create(domain, p, async () => {
+						rawwrite('static', domain, p, desc);
+						return {
+							statusCode: 302,
+							head: {
+								location: `https://${domain}${p}`,
+							},
+						};
 					});
 				});
-			});
 		}
-		async function scandir (dir: string) {
+		async function scandir(dir: string) {
 			const scan = readdirSync(dir);
 			for (const f of scan) {
 				const rel = syspath_resolve(dir, f);
@@ -111,7 +114,7 @@ switch (options.action) {
 				}
 			}
 		}
-		
+
 		if (options.entry) {
 			setTimeout(() => uploadFile(options.entry, ['/']), 10000);
 		}
