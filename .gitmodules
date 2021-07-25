@@ -1,0 +1,3 @@
+[submodule "modules/nodesite-proxy"]
+	path = modules/nodesite-proxy
+	url = https://github.com/prokopschield/nodesite-proxy
