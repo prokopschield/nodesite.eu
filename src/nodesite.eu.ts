@@ -378,36 +378,6 @@ const NodeSiteClient = function NodeSiteClient(
 	};
 };
 
-export const proxy = (NodeSiteClient.proxy = function createProxy(
-	hostListen: string,
-	hostPath = '/',
-	urlPoint = 'localhost:8080',
-	fetchOptions = {}
-) {
-	return NodeSiteClient(
-		hostListen,
-		hostPath || '/',
-		async (request: NodeSiteRequest) => {
-			let uri = urlPoint + request.uri;
-			uri = uri.replace('//+/', '/');
-			const res = await fetch(uri, fetchOptions);
-			let head: {
-				[header: string]: string;
-			} = {};
-			for (const c in res.headers.keys()) {
-				const h = res.headers.get(c);
-				if (h) {
-					head[c] = h;
-				}
-			}
-			return {
-				head,
-				body: await res.buffer(),
-			};
-		}
-	);
-});
-
 export function rewrite(
 	request: NodeSiteRequest,
 	uri: string
