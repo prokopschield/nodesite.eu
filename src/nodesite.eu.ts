@@ -3,9 +3,10 @@ import { getConfig } from 'doge-config';
 import fs from 'fs';
 import { OutgoingHttpHeaders } from 'http';
 import { contentType as mime } from 'mime-types';
-import fetch from 'node-fetch';
 import path from 'path';
-import { io as libSocketIO, Socket } from 'socket.io-client';
+import { Socket } from 'socket.io-client';
+
+import connect from 'nodesite.eu-core';
 
 const pathslash = process.platform === 'win32' ? '\\' : '/';
 const BAD = 'Bad Gateway';
@@ -93,12 +94,9 @@ const solve = async function solveChallenge(site: string, code: string) {
 let init_started = false;
 let init = async function initializeSocket() {
 	init_started = true;
-	const port = await fetch('https://nodesite.eu/get_port', {}).then((r) =>
-		r.text()
-	);
 	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
 	// make sure old socket does not respond to pings
-	insSocketIO = libSocketIO('wss://nodesite.eu:' + port);
+	insSocketIO = connect();
 	insSocketIO.on('connect', redo);
 	insSocketIO.on('error', redo);
 	insSocketIO.on('death', redo);
