@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-17",
+	"version": "1.2.0-18",
 	"main": "lib/index.js",
 	"bin": {
 		"nodesite-proxy": "lib/modules/proxy/cli.js",
@@ -14,8 +14,8 @@
 	"author": "Prokop Schield",
 	"license": "GPL-3.0-or-later",
 	"dependencies": {
-		"blakets": "^0.1.0",
-		"doge-config": "^0.3.9",
+		"blakets": "^0.1.2",
+		"doge-config": "^0.3.12",
 		"mime-types": "^2.1.32",
 		"node-fetch": "^2.6.1",
 		"nodesite.eu-core": "^1.2.0",
@@ -37,7 +37,7 @@
 	"homepage": "https://github.com/prokopschield/nodesite.eu#readme",
 	"directories": {
 		"lib": "lib",
-		"modules": "modules",
+		"modules": "lib/modules",
 		"test": "tests"
 	}
 }
