@@ -2,22 +2,36 @@ import http from 'http';
 import https from 'https';
 import { create } from '../../nodesite.eu';
 
-export interface Options {}
+export interface IncompleteOptions {
+	path?: string;
+}
 
-const DEFAULT_OPTIONS: Options = {};
+export interface Options extends IncompleteOptions {
+	path: string;
+}
+
+const DEFAULT_OPTIONS: Options = {
+	path: '/',
+};
 
 /**
  * Proxy a URL to nodesite.eu
  * @param {string} from URL to proxy, for example 'http://localhost:3000'
  * @param {string} to NodeSite name, for example 'proxy.nodesite.eu'
  */
-export function proxy(from: string, to: string, options: Options = {}) {
+export function proxy(
+	from: string,
+	to: string,
+	options: IncompleteOptions = {}
+) {
 	const opts = Object.assign({}, DEFAULT_OPTIONS, options);
 	const url = new URL(from);
 	const protocol = url.protocol === 'https:' ? https : http;
-	create(to, '/', async (request) => {
+	create(to, opts.path, async (request) => {
 		return new Promise((resolve) => {
-			const read_url = new URL(`${url.protocol}//${url.host}${request.uri}`);
+			const read_url = new URL(
+				`${url.protocol}//${url.host}${request.uri}`
+			);
 			const req = protocol.request(read_url, (res) => {
 				const ret: {
 					statusCode: number;
