@@ -57,8 +57,7 @@ const solve = async function solveChallenge(site: string, code: string) {
 	}
 	solving = true;
 	let p = 0,
-		o = 16 ** code.length / 32,
-		i = 0;
+		o = 16 ** code.length / 32;
 	let nonce = code + site;
 	let nonceb: string;
 	while (
@@ -91,9 +90,7 @@ const solve = async function solveChallenge(site: string, code: string) {
 	} else solving = false;
 };
 
-let init_started = false;
 let init = async function initializeSocket() {
-	init_started = true;
 	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
 	// make sure old socket does not respond to pings
 	insSocketIO = connect();
@@ -209,7 +206,9 @@ const requestHandler = async (request: NodeSiteRequest) => {
 						}
 						for (const o in open_file_options) {
 							if (fs.existsSync(f + open_file_options[o])) {
-								return fileReadHandler(f + open_file_options[o]);
+								return fileReadHandler(
+									f + open_file_options[o]
+								);
 							}
 						}
 					} else {
@@ -253,7 +252,12 @@ const IOListener: {
 	sockets: {
 		[iid: number]: NodeSiteClientSocket;
 	};
-	receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
+	receive(
+		id: number,
+		site: string,
+		e: string,
+		args: Array<any>
+	): Promise<void>;
 } = function NodeSiteIOListener(cb: NodeSiteSocketListener) {
 	IOListener.registerSocketListener(cb);
 };
@@ -366,7 +370,9 @@ const NodeSiteClient = function NodeSiteClient(
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		NodeSiteClient.ready.then((socket) => socket.emit('get_challenge', domain));
+		NodeSiteClient.ready.then((socket) =>
+			socket.emit('get_challenge', domain)
+		);
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');

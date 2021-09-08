@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
 import { create, rawwrite } from './nodesite.eu';
-import fetch from 'node-fetch';
 import https from 'https';
 import { posix as path, resolve as syspath_resolve } from 'path';
 import { createReadStream, readdirSync, statSync } from 'fs';

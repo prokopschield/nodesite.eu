@@ -76,10 +76,10 @@ delayed-stream@~1.0.0:
   resolved "https://registry.yarnpkg.com/delayed-stream/-/delayed-stream-1.0.0.tgz#df3ae199acadfb7d440aaae0b29e2272b24ec619"
   integrity sha1-3zrhmayt+31ECqrgsp4icrJOxhk=
 
-doge-config@^0.3.12:
-  version "0.3.12"
-  resolved "https://registry.yarnpkg.com/doge-config/-/doge-config-0.3.12.tgz#00d396611ed0f168f9812d74a8b9343baf628df0"
-  integrity sha512-TmpxAnCEgAD7IBamw9gGMSg4leiyQx7xE83T1wD4ovr/oQ0aalxQ4DZnofPVNiIRz7Suj3qla9pbfGhtb1tUNA==
+doge-config@^0.3.13:
+  version "0.3.13"
+  resolved "https://registry.yarnpkg.com/doge-config/-/doge-config-0.3.13.tgz#8f7638d0621389d41cd5ed32fcc3170241ffa0e3"
+  integrity sha512-haeMqZvSvBkVreRDLYbjoxUAspDcmi9qBrcOkRCH0WyBOpW2IlXlKNXnCTlBuNeFVaBqe06tCQCPMMWrBl6BwQ==
   dependencies:
     doge-json "^1.2.1"
 
