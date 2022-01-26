@@ -175,15 +175,15 @@ const requestHandler = async (request: NodeSiteRequest) => {
 	if (!site) {
 		if (!(site = sites['*'])) return BAD;
 	}
-	let path = (request.uri.split('?').shift() + '/')
+	let pathparts = (path.resolve(request.uri).split('?').shift() + '/')
 		.replace(/\.\.+/, '.')
 		.replace(/[\/\\]+/g, '/')
 		.split('/');
 	let localpath = [];
-	while (path.length) {
-		localpath.unshift(path.pop());
+	while (pathparts.length) {
+		localpath.unshift(pathparts.pop());
 		if (!localpath[localpath.length - 1]) localpath.pop();
-		let tpath = path.join('/') || '/';
+		let tpath = pathparts.join('/') || '/';
 		let lpath = localpath.join(pathslash);
 		let sf = site[tpath];
 		if (sf) {
@@ -206,9 +206,7 @@ const requestHandler = async (request: NodeSiteRequest) => {
 						}
 						for (const o in open_file_options) {
 							if (fs.existsSync(f + open_file_options[o])) {
-								return fileReadHandler(
-									f + open_file_options[o]
-								);
+								return fileReadHandler(f + open_file_options[o]);
 							}
 						}
 					} else {
@@ -252,12 +250,7 @@ const IOListener: {
 	sockets: {
 		[iid: number]: NodeSiteClientSocket;
 	};
-	receive(
-		id: number,
-		site: string,
-		e: string,
-		args: Array<any>
-	): Promise<void>;
+	receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
 } = function NodeSiteIOListener(cb: NodeSiteSocketListener) {
 	IOListener.registerSocketListener(cb);
 };
@@ -370,9 +363,7 @@ const NodeSiteClient = function NodeSiteClient(
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		NodeSiteClient.ready.then((socket) =>
-			socket.emit('get_challenge', domain)
-		);
+		NodeSiteClient.ready.then((socket) => socket.emit('get_challenge', domain));
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');
