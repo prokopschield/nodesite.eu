@@ -1,10 +1,12 @@
 import { blake2sHex as blake } from 'blakets';
 import { getConfig } from 'doge-config';
+import * as POW from 'doge-pow';
 import fs from 'fs';
 import { OutgoingHttpHeaders } from 'http';
 import { contentType as mime } from 'mime-types';
 import path from 'path';
 import { Socket } from 'socket.io-client';
+import { getRegistry } from '@prokopschield/registry';
 
 import connect from 'nodesite.eu-core';
 
@@ -19,6 +21,8 @@ const open_file_options = [
 
 const config = getConfig('nodesite-eu-core');
 const solved = config.__getField('solved-challenges');
+
+const registry_root = config.str.registry || 'nodesite.eu';
 
 let insSocketIO: Socket;
 let sites: {
@@ -90,6 +94,27 @@ const solve = async function solveChallenge(site: string, code: string) {
 	} else solving = false;
 };
 
+type proof_v2 = POW.Proven<{ site: string }>;
+
+async function solve_v2(site: string): Promise<proof_v2> {
+	const reg = getRegistry<proof_v2>(`${registry_root}/sites/${site}`);
+	const signature = await reg.get('signature');
+	if (signature) {
+		return signature;
+	} else {
+		const proven: proof_v2 = await POW.prove_async({ site }, 4);
+		reg.set('signature', proven);
+		console.log({ proven });
+		return proven;
+	}
+}
+
+function register_v2(site: string) {
+	NodeSiteClient.ready.then(async (socket) =>
+		socket.emit('site_register_v2', site, await solve_v2(site))
+	);
+}
+
 let init = async function initializeSocket() {
 	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
 	// make sure old socket does not respond to pings
@@ -98,15 +123,9 @@ let init = async function initializeSocket() {
 	insSocketIO.on('error', redo);
 	insSocketIO.on('death', redo);
 	insSocketIO.on('disconnect', redo);
-	insSocketIO.on('deauth', (site: string) =>
-		insSocketIO.emit('new_challenge_if_unauthed', site)
-	);
-	insSocketIO.on('invalid_challenge', (site: string) =>
-		insSocketIO.emit('get_challenge', site)
-	);
-	insSocketIO.on('challenge_failed', (site: string) =>
-		insSocketIO.emit('get_challenge', site)
-	);
+	insSocketIO.on('deauth', (site: string) => register_v2(site));
+	insSocketIO.on('invalid_challenge', (site: string) => register_v2(site));
+	insSocketIO.on('challenge_failed', (site: string) => register_v2(site));
 	insSocketIO.on('set_challenge', solve);
 	insSocketIO.on('challenge_success', (site: string) =>
 		process.stdout.write('\rListening on https://' + site + '\n')
@@ -115,7 +134,7 @@ let init = async function initializeSocket() {
 		const retry_after = config.__forceNumber('retry_after') || 600000;
 		console.log(`\r${site} is already taken!`);
 		console.log(`\rScheduling re-try after ${retry_after / 1000} seconds.`);
-		setTimeout(() => insSocketIO.emit('get_challenge'), retry_after);
+		setTimeout(() => register_v2(site), retry_after);
 	});
 	insSocketIO.on('ping', (cb: (date: Date) => boolean) => {
 		const date = new Date();
@@ -133,8 +152,8 @@ let init = async function initializeSocket() {
 };
 
 let redo = async function reconnectAll() {
-	for (const n in sites) {
-		insSocketIO.emit('get_challenge', n);
+	for (const site in sites) {
+		register_v2(site);
 	}
 };
 
@@ -373,9 +392,7 @@ const NodeSiteClient = function NodeSiteClient(
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		NodeSiteClient.ready.then((socket) =>
-			socket.emit('get_challenge', domain)
-		);
+		register_v2(domain);
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');
@@ -448,6 +465,8 @@ export {
 	NodeSiteSocketListener,
 	NodeSiteRequest,
 	NodeSiteRequestHeaders,
+	solve_v2,
+	register_v2,
 };
 
 Object.assign(NodeSiteClient, {
@@ -460,6 +479,8 @@ Object.assign(NodeSiteClient, {
 	rawwrite,
 	rewrite,
 	direct,
+	solve_v2,
+	register_v2,
 });
 
 export default NodeSiteClient;
