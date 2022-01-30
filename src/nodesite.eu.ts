@@ -117,7 +117,10 @@ let init = async function initializeSocket() {
 		console.log(`\rScheduling re-try after ${retry_after / 1000} seconds.`);
 		setTimeout(() => insSocketIO.emit('get_challenge'), retry_after);
 	});
-	insSocketIO.on('ping', (uuid: string) => insSocketIO.emit('pong', uuid));
+	insSocketIO.on('ping', (cb: (date: Date) => boolean) => {
+		const date = new Date();
+		insSocketIO.emit('pong', cb?.(date) || cb || date);
+	});
 	insSocketIO.on('request', requestHandlerProxy);
 	insSocketIO.on('io', IOListener.receive);
 	insSocketIO.on('ctos-ping', (id: number) =>
@@ -206,7 +209,9 @@ const requestHandler = async (request: NodeSiteRequest) => {
 						}
 						for (const o in open_file_options) {
 							if (fs.existsSync(f + open_file_options[o])) {
-								return fileReadHandler(f + open_file_options[o]);
+								return fileReadHandler(
+									f + open_file_options[o]
+								);
 							}
 						}
 					} else {
@@ -250,7 +255,12 @@ const IOListener: {
 	sockets: {
 		[iid: number]: NodeSiteClientSocket;
 	};
-	receive(id: number, site: string, e: string, args: Array<any>): Promise<void>;
+	receive(
+		id: number,
+		site: string,
+		e: string,
+		args: Array<any>
+	): Promise<void>;
 } = function NodeSiteIOListener(cb: NodeSiteSocketListener) {
 	IOListener.registerSocketListener(cb);
 };
@@ -363,7 +373,9 @@ const NodeSiteClient = function NodeSiteClient(
 	domain = domain.match(/[^a-z0-9\-]/) ? domain : domain + '.nodesite.eu';
 	if (!sites[domain]) {
 		sites[domain] = {};
-		NodeSiteClient.ready.then((socket) => socket.emit('get_challenge', domain));
+		NodeSiteClient.ready.then((socket) =>
+			socket.emit('get_challenge', domain)
+		);
 	}
 	let site = sites[domain];
 	path = `/${path}`.replace(/[\\\/]+/g, '/');
