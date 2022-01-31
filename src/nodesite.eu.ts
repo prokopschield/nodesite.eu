@@ -104,7 +104,6 @@ async function solve_v2(site: string): Promise<proof_v2> {
 	} else {
 		const proven: proof_v2 = await POW.prove_async({ site }, 4);
 		reg.set('signature', proven);
-		console.log({ proven });
 		return proven;
 	}
 }
