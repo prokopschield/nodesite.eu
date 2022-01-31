@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-23",
+	"version": "1.2.0-24",
 	"main": "lib/index.js",
 	"bin": {
 		"nodesite-proxy": "lib/modules/proxy/cli.js",
@@ -32,11 +32,7 @@
 		"type": "git",
 		"url": "git+https://github.com/prokopschield/nodesite.eu.git"
 	},
-	"keywords": [
-		"node",
-		"site",
-		"nodesite.eu"
-	],
+	"keywords": ["node", "site", "nodesite.eu"],
 	"bugs": {
 		"url": "https://github.com/prokopschield/nodesite.eu/issues"
 	},

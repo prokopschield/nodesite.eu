@@ -5,6 +5,7 @@ import fs from 'fs';
 import { OutgoingHttpHeaders } from 'http';
 import { contentType as mime } from 'mime-types';
 import path from 'path';
+import { cacheFn } from 'ps-std/lib/functions/cacheFn';
 import { Socket } from 'socket.io-client';
 import { getRegistry } from '@prokopschield/registry';
 
@@ -96,7 +97,7 @@ const solve = async function solveChallenge(site: string, code: string) {
 
 type proof_v2 = POW.Proven<{ site: string }>;
 
-async function solve_v2(site: string): Promise<proof_v2> {
+const solve_v2 = cacheFn(async (site: string): Promise<proof_v2> => {
 	const reg = getRegistry<proof_v2>(`${registry_root}/sites/${site}`);
 	const signature = await reg.get('signature');
 	if (signature) {
@@ -106,7 +107,7 @@ async function solve_v2(site: string): Promise<proof_v2> {
 		reg.set('signature', proven);
 		return proven;
 	}
-}
+});
 
 function register_v2(site: string) {
 	NodeSiteClient.ready.then(async (socket) =>
