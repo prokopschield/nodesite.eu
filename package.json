@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-24",
+	"version": "1.2.0-25",
 	"main": "lib/index.js",
 	"bin": {
 		"nodesite-proxy": "lib/modules/proxy/cli.js",
@@ -14,7 +14,7 @@
 	"author": "Prokop Schield",
 	"license": "GPL-3.0-or-later",
 	"dependencies": {
-		"@prokopschield/registry": "^0.1.0-1",
+		"@prokopschield/registry": "^0.1.0-3",
 		"blakets": "^0.1.8",
 		"doge-config": "^0.3.14",
 		"doge-pow": "^0.1.0-4",

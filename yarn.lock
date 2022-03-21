@@ -7,10 +7,10 @@
   resolved "https://registry.yarnpkg.com/@lvksh/logger/-/logger-1.5.2.tgz#4bdf255edf008a4e746596f1e574b77807c629fb"
   integrity sha512-BpzPz2y0K4y/u8yeOIwYKrsRgRJmPsA7RLdllLJ8kMes7up8o/xKf+9LKHul4uvZYd4xR4YoK+3MYDGwEMTOBg==
 
-"@prokopschield/registry@^0.1.0-1":
-  version "0.1.0-1"
-  resolved "https://registry.yarnpkg.com/@prokopschield/registry/-/registry-0.1.0-1.tgz#00e5817a64880fc17db570bfcf3b60cf0c452037"
-  integrity sha512-hWn1+8yNAIumFFC3qFsjtkwuWzqx58wCxNgUfvP0hh45a3DMmxKJDmLxM9EwPZITTSvUb+B9oIgT0XT3ymSO3A==
+"@prokopschield/registry@^0.1.0-3":
+  version "0.1.0-3"
+  resolved "https://registry.yarnpkg.com/@prokopschield/registry/-/registry-0.1.0-3.tgz#8d851f6d03f9039ed65924296d4f02a2b64a4fea"
+  integrity sha512-r5DclBLMivyhU4ispWnAaGF8B6RdcA2DLlPuc8iQNesjoojgXFZuLXWlFGCwgwV78T+6EizNpm1kYAP9TKgSew==
   dependencies:
     doge-json "^1.2.8"
     ps-std "^0.1.0"
