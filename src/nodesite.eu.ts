@@ -314,8 +314,8 @@ IOListener.newsocket = function createSocket(id) {
 		socket.send.apply(null, args);
 	};
 	socket.id = id;
-	socket.send = function send(...args: Array<any>) {
-		insSocketIO.emit('stoc', socket.id, args);
+	socket.send = function send(e: string, ...args: Array<any>) {
+		insSocketIO.emit('stoc', socket.id, e, args);
 	};
 	socket.listeners = {};
 	socket.listenersAny = Array<Function>();
