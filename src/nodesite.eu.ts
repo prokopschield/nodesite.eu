@@ -181,15 +181,32 @@ interface NodeSiteRequestHeaders {
 	'accept-language'?: string;
 }
 
+export const errorResponse: ListenerResponse = {
+	statusCode: 500,
+};
+
+export type ErrorHandler = (err: unknown) => object | undefined;
+
+let errHandler: ErrorHandler = () => errorResponse;
+
+export const setErrorHandler = (newErrorHandler: ErrorHandler) => {
+	errHandler = newErrorHandler;
+};
+
 const requestHandlerProxy = async (request: NodeSiteRequest) => {
-	let response = await requestHandler(request);
-	if (response == BAD) return;
-	if (typeof response !== 'object' || response instanceof Uint8Array) {
-		response = {
-			body: response,
-		};
+	try {
+		let response = await requestHandler(request);
+
+		if (typeof response !== 'object' || response instanceof Uint8Array) {
+			response = {
+				body: response,
+			};
+		}
+
+		insSocketIO.emit('response', request.iid, response);
+	} catch (error) {
+		insSocketIO.emit('repsonse', request.iid, errHandler(error));
 	}
-	insSocketIO.emit('response', request.iid, response);
 };
 
 const requestHandler = async (request: NodeSiteRequest) => {
