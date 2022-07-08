@@ -42,6 +42,11 @@ type ListenerResponse =
 			statusCode?: number;
 			body?: string | Buffer;
 			head?: OutgoingHttpHeaders;
+	  }
+	| {
+			statusCode?: number;
+			head?: OutgoingHttpHeaders;
+			hash: string;
 	  };
 
 type Listener = (
