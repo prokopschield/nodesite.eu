@@ -210,7 +210,7 @@ const requestHandlerProxy = async (request: NodeSiteRequest) => {
 
 		insSocketIO.emit('response', request.iid, response);
 	} catch (error) {
-		insSocketIO.emit('repsonse', request.iid, errHandler(error));
+		insSocketIO.emit('response', request.iid, errHandler(error));
 	}
 };
 
