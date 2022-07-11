@@ -3,11 +3,6 @@
 	"description": "Put your work online - the easy way.",
 	"version": "1.2.0-30",
 	"main": "lib/index.js",
-	"bin": {
-		"nodesite-proxy": "lib/modules/proxy/cli.js",
-		"nodesite.eu": "lib/nodesite-cli.js",
-		"nodesite": "lib/nodesite-cli.js"
-	},
 	"scripts": {
 		"test": "npx nslibmgr test"
 	},
