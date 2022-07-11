@@ -204,6 +204,11 @@ ps-std@^0.1.0:
   resolved "https://registry.yarnpkg.com/ps-std/-/ps-std-0.1.0.tgz#e6114b5e68f62126ab793ea4e55067d2c4edb98b"
   integrity sha512-/kPueh6atPXWsDDqsfcrppiAJS8zwwduobn49/0+YwLyb2JkY/cMhZ8lTR7uCq4Z68smcRWEvDVcFlWIrRmi6A==
 
+ps-std@^0.1.6:
+  version "0.1.6"
+  resolved "https://registry.yarnpkg.com/ps-std/-/ps-std-0.1.6.tgz#028f1a7fd4af2d685de54df3f1f94b7df7f9dd03"
+  integrity sha512-363nSS/KXlvf92zDPo3BEJ5Ghwuzf/RQUpg4VkK/lsXol6Fxmt88qofiuhmvQfeAD1XYySeX13updBNwATRYRA==
+
 require-gpl@^0.1.1:
   version "0.1.1"
   resolved "https://registry.yarnpkg.com/require-gpl/-/require-gpl-0.1.1.tgz#010152f7b91178f47f2eb7602617e3a58f2becf2"

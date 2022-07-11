@@ -3,6 +3,8 @@ import { getConfig } from 'doge-config';
 import * as POW from 'doge-pow';
 import fs from 'fs';
 import { OutgoingHttpHeaders } from 'http';
+import http from 'http';
+import https from 'https';
 import { contentType as mime } from 'mime-types';
 import path from 'path';
 import { cacheFn } from 'ps-std/lib/functions/cacheFn';
@@ -10,6 +12,7 @@ import { Socket } from 'socket.io-client';
 import { getRegistry } from '@prokopschield/registry';
 
 import connect from 'nodesite.eu-core';
+import { sanitizeHeaders } from 'ps-std';
 
 const pathslash = process.platform === 'win32' ? '\\' : '/';
 const BAD = 'Bad Gateway';
@@ -461,6 +464,57 @@ Object.defineProperty(NodeSiteClient, 'ready', {
 export const ready = ready_promise;
 NodeSiteClient.ready = ready_promise;
 //////////////////////////////////////////////////////////////////////
+
+/**
+ * Proxy a URL to nodesite.eu
+ * @param {string} from URL to proxy, for example 'http://localhost:3000'
+ * @param {string} to NodeSite name, for example 'proxy.nodesite.eu'
+ */
+function proxy(from: string, to: string, { path } = { path: '/' }) {
+	create(to, path, (req) => {
+		return new Promise<ListenerResponse>(async (resolve) => {
+			try {
+				const req_uri = new URL(req.uri, from);
+				const handler = req_uri.protocol === 'https:' ? https : http;
+
+				const headers = sanitizeHeaders(req.head);
+				headers['Host'] = req_uri.host;
+
+				const request = handler.request(
+					req_uri,
+					{
+						method: req.method,
+						headers,
+					},
+					(response) => {
+						const buffers = Array<Buffer>();
+						response.on('data', (chunk) => buffers.push(chunk));
+						response.on('end', () => {
+							resolve({
+								statusCode: response.statusCode,
+								head: sanitizeHeaders(response.headers),
+								body: Buffer.concat(buffers),
+							});
+						});
+					}
+				);
+
+				if (req.body?.length) {
+					request.write(req.body);
+				}
+
+				request.end();
+			} catch {
+				return resolve({
+					statusCode: 500,
+				});
+			}
+		});
+	});
+}
+
+NodeSiteClient.proxy = proxy;
+export { proxy };
 
 NodeSiteClient.create = NodeSiteClient;
 NodeSiteClient.init = init;
