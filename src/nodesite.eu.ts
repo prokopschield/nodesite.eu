@@ -12,7 +12,7 @@ import { Socket } from 'socket.io-client';
 import { getRegistry } from '@prokopschield/registry';
 
 import connect from 'nodesite.eu-core';
-import { sanitizeHeaders } from 'ps-std';
+import { delay, sanitizeHeaders } from 'ps-std';
 
 const pathslash = process.platform === 'win32' ? '\\' : '/';
 const BAD = 'Bad Gateway';
@@ -123,10 +123,14 @@ function register_v2(site: string) {
 	);
 }
 
-let init = async function initializeSocket() {
+let init = async function initializeSocket(
+	backend_url: string = process?.env?.NODESITE_BACKEND ||
+		'wss://nodesite.eu:20122'
+) {
 	if (insSocketIO) insSocketIO.listeners('ping').length = 0;
 	// make sure old socket does not respond to pings
-	insSocketIO = connect();
+
+	insSocketIO = connect(backend_url);
 	insSocketIO.on('connect', redo);
 	insSocketIO.on('error', redo);
 	insSocketIO.on('death', redo);
@@ -157,6 +161,7 @@ let init = async function initializeSocket() {
 		console.log('\rServer regected response!', args)
 	);
 	Object.assign(NodeSiteClient, { insSocketIO });
+	return insSocketIO;
 };
 
 let redo = async function reconnectAll() {
@@ -444,7 +449,13 @@ export function rawwrite(e: string, ...args: any[]) {
 }
 
 //////////////////////////////////////////////////////////////////////
-export const ready_promise = init().then(() => insSocketIO);
+export const ready_promise = delay(7).then(() => {
+	if (insSocketIO) {
+		return insSocketIO;
+	} else {
+		return init();
+	}
+});
 NodeSiteClient.ready_promise = ready_promise;
 
 Object.defineProperty(NodeSiteClient, 'ready', {
