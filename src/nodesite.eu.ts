@@ -289,7 +289,7 @@ const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
 type NodeSiteSocketListener = (
 	socket: NodeSiteClientSocket,
 	site: string
-) => void;
+) => void | Promise<void>;
 
 const IOListener: {
 	(cb: NodeSiteSocketListener): void;
