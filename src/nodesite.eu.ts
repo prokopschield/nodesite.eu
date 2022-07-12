@@ -1,3 +1,4 @@
+import { getRegistry } from '@prokopschield/registry';
 import { blake2sHex as blake } from 'blakets';
 import { getConfig } from 'doge-config';
 import * as POW from 'doge-pow';
@@ -6,13 +7,10 @@ import { OutgoingHttpHeaders } from 'http';
 import http from 'http';
 import https from 'https';
 import { contentType as mime } from 'mime-types';
-import path from 'path';
-import { cacheFn } from 'ps-std/lib/functions/cacheFn';
-import { Socket } from 'socket.io-client';
-import { getRegistry } from '@prokopschield/registry';
-
 import connect from 'nodesite.eu-core';
-import { delay, sanitizeHeaders } from 'ps-std';
+import path from 'path';
+import { cacheFn, delay, sanitizeHeaders } from 'ps-std';
+import { Socket } from 'socket.io-client';
 
 const pathslash = process.platform === 'win32' ? '\\' : '/';
 const BAD = 'Bad Gateway';
