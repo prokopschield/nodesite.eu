@@ -566,6 +566,9 @@ Object.assign(NodeSiteClient, {
 	direct,
 	solve_v2,
 	register_v2,
+
+	errorResponse,
+	setErrorHandler,
 });
 
 export default NodeSiteClient;
