@@ -434,7 +434,8 @@ export function rewrite(
 	request: NodeSiteRequest,
 	uri: string
 ): Promise<ListenerResponse> {
-	request.uri = path.posix.resolve(request.uri, uri);
+	const url = new URL(uri, new URL(request.uri, 'a://b'));
+	request.uri = url.pathname + url.search;
 	return requestHandler(request);
 }
 
