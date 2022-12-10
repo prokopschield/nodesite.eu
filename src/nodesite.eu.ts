@@ -48,6 +48,11 @@ type ListenerResponse =
 			statusCode?: number;
 			head?: OutgoingHttpHeaders;
 			hash: string;
+	  }
+	| {
+			statusCode?: number;
+			head?: OutgoingHttpHeaders;
+			stream: string;
 	  };
 
 type Listener = (

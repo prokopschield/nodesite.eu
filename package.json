@@ -1,7 +1,7 @@
 {
 	"name": "nodesite.eu",
 	"description": "Put your work online - the easy way.",
-	"version": "1.2.0-34",
+	"version": "1.2.0-35",
 	"main": "lib/nodesite.eu.js",
 	"scripts": {
 		"test": "npx nslibmgr test"
