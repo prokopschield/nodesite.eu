@@ -8,6 +8,7 @@ import http from 'http';
 import https from 'https';
 import { contentType as mime } from 'mime-types';
 import connect from 'nodesite.eu-core';
+import { Source } from 'nsblob-stream';
 import path from 'path';
 import { cacheFn, delay, sanitizeHeaders } from 'ps-std';
 import { Socket } from 'socket.io-client';
@@ -37,6 +38,7 @@ let sites: {
 } = {};
 
 type ListenerResponse =
+	| Source<{ type: string }>
 	| string
 	| Buffer
 	| {
@@ -216,6 +218,16 @@ const requestHandlerProxy = async (request: NodeSiteRequest) => {
 		if (typeof response !== 'object' || response instanceof Uint8Array) {
 			response = {
 				body: response,
+			};
+		}
+
+		if (response instanceof Source) {
+			response = {
+				head: {
+					'Content-Length': response.length,
+					'Content-Type': response.props.type,
+				},
+				stream: response.raw,
 			};
 		}
 
