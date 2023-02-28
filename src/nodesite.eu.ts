@@ -294,16 +294,9 @@ const requestHandler = async (request: NodeSiteRequest) => {
 };
 
 const fileReadHandler = function readFileAndConvertIntoResponse(file: string) {
-	let data = fs.readFileSync(file);
-	let head = {
-		'Content-Type': mime(file.split(/[\\\/]+/).pop() || '') || 'text/plain',
-		'Content-Length': data.length,
-	};
-	let body = data;
-	return {
-		head,
-		body,
-	};
+	return Source.fromStream(fs.createReadStream(file), {
+		type: mime(path.basename(file)) || 'text/plain',
+	});
 };
 
 type NodeSiteSocketListener = (
