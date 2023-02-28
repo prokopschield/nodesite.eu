@@ -2,6 +2,7 @@ config/
 .dyn-cache-dir/
 node_modules/
 package-lock.json
+pnpm-lock.yaml
 src/
 tsconfig.json
 yarn.lock
