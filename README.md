@@ -12,7 +12,7 @@
 
 ```javascript
 const { create, rewrite } = require('nodesite.eu`);
-create('foobar', '/', (request) => rewrite('404.html'), 'public/');
+create('foobar', '/', (request) => rewrite(request, '404.html'), 'public/');
 ```
 
 #### Play around!
